@@ -1,0 +1,58 @@
+shiro:
+  props:
+    iterations: 2082
+
+databse:
+  name: pixiv_manager
+
+#空闲连接保活
+#解决druid 日志报错：discard long time none received connection:xxx
+druid:
+  mysql:
+    usePingMethod: false
+
+
+
+server:
+  port: 9090
+spring:
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 1024MB
+  profiles:
+    active: dev
+  #      active: prod
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+    druid:
+      initial-size: 5
+      min-idle: 2
+      max-active: 20
+      max-wait: 60000
+      time-between-eviction-runs-millis: 1800000
+      min-evictable-idle-time-millis: 1800000
+      validation-query: SELECT 1 FROM DUAL
+      test-while-idle: true
+      test-on-borrow: false
+      test-on-return: false
+      pool-prepared-statements: true
+      max-pool-prepared-statement-per-connection-size: 20
+      filters: stat,wall,slf4j
+      connect-properties: druid.stat.mergeSql\=true;druid.stat.slowSqlMillis\=5000
+
+# actable的配置信息
+actable:
+  table:
+    auto: update
+  model:
+    pack: com.gin.pixiv_manager.module.*.entity,com.gin.pixiv_manager.sys.user_info.entity
+  database:
+    type: mysql
+mybatis-plus:
+  mapper-locations: classpath*:com/gitee/sunchenbin/mybatis/actable/mapping/*/*.xml , classpath:mapper/*.xml
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+
+knife4j:
+  enable: true
