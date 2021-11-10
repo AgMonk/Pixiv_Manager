@@ -46,7 +46,7 @@ actable:
   table:
     auto: update
   model:
-    pack: com.gin.pixiv_manager.module.*.entity,com.gin.pixiv_manager.sys.user_info.entity
+    pack: com.gin.pixiv_manager.module.*.entity,com.gin.pixiv_manager.module.*.entity.*
   database:
     type: mysql
 mybatis-plus:

@@ -28,9 +28,9 @@ public class JsonUtil {
 
     public static String prettyJson(Object obj) {
         return JSON.toJSONString(obj,
-                SerializerFeature.PrettyFormat,
+                SerializerFeature.PrettyFormat
 //                SerializerFeature.WriteMapNullValue,
-                SerializerFeature.WriteDateUseDateFormat
+                ,SerializerFeature.SortField
         );
     }
 
