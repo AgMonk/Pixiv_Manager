@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.gin.pixiv_manager.module.pixiv.dao.IllustPoDao;
 import com.gin.pixiv_manager.module.pixiv.entity.PixivIllustPo;
 import com.gin.pixiv_manager.module.pixiv.entity.PixivCookie;
+import com.gin.pixiv_manager.module.pixiv.entity.PixivTagPo;
 import com.gin.pixiv_manager.module.pixiv.entity.PixivUserInfoPo;
 import com.gin.pixiv_manager.module.pixiv.utils.pixiv.request.PixivRequest;
 import com.gin.pixiv_manager.module.pixiv.utils.pixiv.response.body.PixivIllustDetail;
@@ -19,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.util.concurrent.Future;
+import java.util.stream.Collectors;
 
 /**
  * @author bx002
@@ -31,6 +33,7 @@ public class IllustPoServiceImpl extends ServiceImpl<IllustPoDao, PixivIllustPo>
     private final PixivCookieService pixivCookieService;
     private final ThreadPoolTaskExecutor illustExecutor;
     private final PixivUserInfoPoService pixivUserInfoPoService;
+    private final PixivTagPoService pixivTagPoService;
 
     @Override
     public Future<PixivIllustPo> findIllust(long pid, Long dataUpdatedTime) {
@@ -70,7 +73,7 @@ public class IllustPoServiceImpl extends ServiceImpl<IllustPoDao, PixivIllustPo>
      * @param tags 标签
      */
     private void handleTags(PixivTags tags) {
-        JsonUtil.printJson(tags);
+        pixivTagPoService.saveTags(tags.getTags().stream().map(PixivTagPo::new).collect(Collectors.toList()));
     }
 
     /**

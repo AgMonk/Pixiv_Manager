@@ -13,7 +13,7 @@ public class PixivTag implements Serializable {
     String tag;
     HashMap<String,String> translation;
 
-    public String getTagTranslation(){
+    public String getOriginalTranslation(){
         if (translation==null || translation.size()==0) {
             return null;
         }

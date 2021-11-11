@@ -31,14 +31,18 @@ public interface PixivUserInfoPoService extends IService<PixivUserInfoPo> {
         if (StringUtils.isEmpty(userInfo)) {
             return;
         }
-        final List<Long> id = userInfo.stream().map(PixivUserInfoPo::getUserId).distinct().collect(Collectors.toList());
-        final List<Long> existsId = listByIds(id).stream().map(PixivUserInfoPo::getUserId).distinct().collect(Collectors.toList());
+        final List<Long> id = userInfo.stream()
+                .map(PixivUserInfoPo::getUserId).distinct().collect(Collectors.toList());
+        final List<Long> existsId = listByIds(id).stream()
+                .map(PixivUserInfoPo::getUserId).distinct().collect(Collectors.toList());
 
-        final List<PixivUserInfoPo> existUserInfo = userInfo.stream().filter(i -> existsId.contains(i.getUserId())).collect(Collectors.toList());
+        final List<PixivUserInfoPo> existUserInfo = userInfo.stream()
+                .filter(i -> existsId.contains(i.getUserId())).collect(Collectors.toList());
         if (existUserInfo.size() > 0) {
             updateBatchById(existUserInfo);
         }
-        final List<PixivUserInfoPo> newUserInfo = userInfo.stream().filter(i -> !existsId.contains(i.getUserId())).collect(Collectors.toList());
+        final List<PixivUserInfoPo> newUserInfo = userInfo.stream()
+                .filter(i -> !existsId.contains(i.getUserId())).collect(Collectors.toList());
         if (newUserInfo.size() > 0) {
             saveBatch(newUserInfo);
         }
