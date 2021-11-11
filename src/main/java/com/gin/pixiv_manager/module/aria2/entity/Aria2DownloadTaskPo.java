@@ -35,7 +35,7 @@ public class Aria2DownloadTaskPo implements Serializable {
     @Column(length = 36, isNull = false)
     String uuid;
 
-    @Column(comment = "gid", length = 60, isNull = false)
+    @Column(comment = "gid", length = 60)
     String gid;
 
     @Column(comment = "urls", length = 2000, isNull = false, type = MySqlTypeConstant.VARCHAR)
