@@ -44,5 +44,13 @@ public interface PixivTagPoService extends IService<PixivTagPo> {
         if (newTags.size()>0) {
             saveBatch(newTags);
         }
+
+        final List<PixivTagPo> oldTags = collection.stream()
+                .filter(i -> existsTags.contains(i.getTag())).collect(Collectors.toList());
+        if (oldTags.size()>0) {
+            updateBatchById(oldTags);
+        }
+
+
     }
 }
