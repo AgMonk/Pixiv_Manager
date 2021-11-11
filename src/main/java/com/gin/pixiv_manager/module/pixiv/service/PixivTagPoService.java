@@ -1,10 +1,7 @@
 package com.gin.pixiv_manager.module.pixiv.service;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.extension.service.IService;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.gin.pixiv_manager.module.pixiv.entity.PixivTagPo;
-import com.gin.pixiv_manager.module.pixiv.entity.PixivUserInfoPo;
 import com.gin.pixiv_manager.sys.utils.StringUtils;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,7 +27,7 @@ public interface PixivTagPoService extends IService<PixivTagPo> {
      * 保存tags
      * @param collection 集合
      */
-    default void saveTags(Collection<PixivTagPo> collection){
+    default void saveTags(Collection<PixivTagPo> collection) {
         if (StringUtils.isEmpty(collection)) {
             return;
         }
@@ -40,16 +37,17 @@ public interface PixivTagPoService extends IService<PixivTagPo> {
                 .map(PixivTagPo::getTag).distinct().collect(Collectors.toList());
 
         final List<PixivTagPo> newTags = collection.stream()
-                .filter(i -> !existsTags.contains(i.getTag())).collect(Collectors.toList());
-        if (newTags.size()>0) {
+                .filter(i -> !existsTags.contains(i.getTag()))
+                .collect(Collectors.toList());
+        if (newTags.size() > 0) {
             saveBatch(newTags);
         }
 
-        final List<PixivTagPo> oldTags = collection.stream()
-                .filter(i -> existsTags.contains(i.getTag())).collect(Collectors.toList());
-        if (oldTags.size()>0) {
-            updateBatchById(oldTags);
-        }
+//        final List<PixivTagPo> oldTags = collection.stream()
+//                .filter(i -> existsTags.contains(i.getTag())).collect(Collectors.toList());
+//        if (oldTags.size()>0) {
+//            updateBatchById(oldTags);
+//        }
 
 
     }

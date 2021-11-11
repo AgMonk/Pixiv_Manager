@@ -22,7 +22,8 @@ class PixivManagerApplicationTests {
 
     @Test
     void contextLoads() throws IOException, ExecutionException, InterruptedException, TimeoutException {
-        final Future<PixivIllustPo> illust = illustPoService.findIllust(92670966L, ZonedDateTime.now().toEpochSecond());
+        final Future<PixivIllustPo> illust = illustPoService.findIllust(93180575L, ZonedDateTime.now().toEpochSecond());
+//        final Future<PixivIllustPo> illust = illustPoService.findIllust(92670966L, ZonedDateTime.now().toEpochSecond());
         final PixivIllustPo pixivIllustPo = illust.get(5, TimeUnit.MINUTES);
         JsonUtil.printJson(pixivIllustPo);
     }

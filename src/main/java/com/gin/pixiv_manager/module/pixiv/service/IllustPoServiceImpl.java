@@ -2,15 +2,10 @@ package com.gin.pixiv_manager.module.pixiv.service;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.gin.pixiv_manager.module.pixiv.dao.IllustPoDao;
-import com.gin.pixiv_manager.module.pixiv.entity.PixivIllustPo;
-import com.gin.pixiv_manager.module.pixiv.entity.PixivCookie;
-import com.gin.pixiv_manager.module.pixiv.entity.PixivTagPo;
-import com.gin.pixiv_manager.module.pixiv.entity.PixivUserInfoPo;
+import com.gin.pixiv_manager.module.pixiv.entity.*;
 import com.gin.pixiv_manager.module.pixiv.utils.pixiv.request.PixivRequest;
 import com.gin.pixiv_manager.module.pixiv.utils.pixiv.response.body.PixivIllustDetail;
-import com.gin.pixiv_manager.module.pixiv.utils.pixiv.response.entity.PixivTags;
 import com.gin.pixiv_manager.module.pixiv.utils.pixiv.response.res.PixivResIllustDetail;
-import com.gin.pixiv_manager.sys.utils.JsonUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.AsyncResult;
@@ -19,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
@@ -34,6 +30,7 @@ public class IllustPoServiceImpl extends ServiceImpl<IllustPoDao, PixivIllustPo>
     private final ThreadPoolTaskExecutor illustExecutor;
     private final PixivUserInfoPoService pixivUserInfoPoService;
     private final PixivTagPoService pixivTagPoService;
+    private final PixivIllustTagPoService pixivIllustTagPoService;
 
     @Override
     public Future<PixivIllustPo> findIllust(long pid, Long dataUpdatedTime) {
@@ -52,11 +49,12 @@ public class IllustPoServiceImpl extends ServiceImpl<IllustPoDao, PixivIllustPo>
             for (int i = 0; i < 10; i++) {
                 try {
                     res = PixivRequest.findIllustDetail(pixivCookie.getCookie(), pid);
-                    final PixivIllustPo po = new PixivIllustPo(res.getBody(), res.getTimestamp());
+                    final PixivIllustDetail body = res.getBody();
+                    final PixivIllustPo po = new PixivIllustPo(body, res.getTimestamp());
                     saveOrUpdate(po);
 
-                    handleUserInfo(res.getBody());
-                    handleTags(res.getBody().getTags());
+                    handleUserInfo(body);
+                    handleTags(body.getId(), body.getTags().getTags().stream().map(PixivTagPo::new).collect(Collectors.toList()));
 
                     return po;
                 } catch (IOException e) {
@@ -72,8 +70,11 @@ public class IllustPoServiceImpl extends ServiceImpl<IllustPoDao, PixivIllustPo>
      * 处理标签
      * @param tags 标签
      */
-    private void handleTags(PixivTags tags) {
-        pixivTagPoService.saveTags(tags.getTags().stream().map(PixivTagPo::new).collect(Collectors.toList()));
+    private void handleTags(Long pid, Collection<PixivTagPo> tags) {
+//        保存tag
+        pixivTagPoService.saveTags(tags);
+//        保存作品的tag
+        pixivIllustTagPoService.savePixivIllustTag(pid, tags.stream().map(PixivTagPo::getTag).collect(Collectors.toList()));
     }
 
     /**
