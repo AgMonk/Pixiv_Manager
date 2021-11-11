@@ -5,7 +5,6 @@ import com.gin.pixiv_manager.module.aria2.utils.method.Aria2Method;
 import com.gin.pixiv_manager.module.aria2.utils.response.Aria2Response;
 import com.gin.pixiv_manager.module.aria2.utils.response.Aria2ResponseMessage;
 import com.gin.pixiv_manager.module.aria2.utils.response.Aria2ResponseQuest;
-import com.gin.pixiv_manager.sys.utils.JsonUtil;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
@@ -15,9 +14,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 /**
  * @author bx002

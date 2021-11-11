@@ -60,7 +60,6 @@ public class PixivIllustPo implements Serializable {
     @Column(comment = "本数据更新时间", isNull = false)
     Long dataUpdatedTime;
 
-
     public PixivIllustPo(PixivIllustDetail detail, Long dataUpdatedTime) {
         BeanUtils.copyProperties(detail, this);
         this.dataUpdatedTime = dataUpdatedTime != null ? dataUpdatedTime : ZonedDateTime.now().toEpochSecond();
