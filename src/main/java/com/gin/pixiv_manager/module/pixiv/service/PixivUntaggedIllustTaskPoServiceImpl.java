@@ -41,7 +41,7 @@ public class PixivUntaggedIllustTaskPoServiceImpl extends ServiceImpl<PixivUntag
     private final Aria2DownloadTaskPoService aria2DownloadTaskPoService;
 
     @Override
-    @Scheduled(cron = "30 2 * * * ?")
+    @Scheduled(cron = "0 0/5 * * * ?")
     public void findBookmarks() throws IOException {
         final PixivCookie pixivCookie = pixivCookieService.get();
 
@@ -52,6 +52,7 @@ public class PixivUntaggedIllustTaskPoServiceImpl extends ServiceImpl<PixivUntag
             return;
         }
         final PixivSearchIllustManga body = untagged.getBody();
+        log.info("未分类作品剩余 {} 个", body.getTotal());
         final List<Long> pidList = body.getData().stream()
                 .map(PixivIllust::getId).collect(Collectors.toList());
 
