@@ -23,7 +23,9 @@ public interface PixivUntaggedIllustTaskPoService extends IService<PixivUntagged
     default List<Long> listPid(int count, List<Long> except) {
         final QueryWrapper<PixivUntaggedIllustTaskPo> qw = new QueryWrapper<>();
         qw.last("limit " + count);
-        qw.notIn("pid", except);
+        if (except.size() > 0) {
+            qw.notIn("pid", except);
+        }
         qw.orderByDesc("pid");
         return list(qw).stream().map(PixivUntaggedIllustTaskPo::getPid).collect(Collectors.toList());
     }
