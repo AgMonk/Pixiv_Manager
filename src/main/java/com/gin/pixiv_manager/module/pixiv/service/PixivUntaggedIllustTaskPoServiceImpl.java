@@ -40,6 +40,9 @@ public class PixivUntaggedIllustTaskPoServiceImpl extends ServiceImpl<PixivUntag
     private final PixivIllustPoService illustPoService;
     private final Aria2DownloadTaskPoService aria2DownloadTaskPoService;
 
+    public static final int MAX_ACTIVE_TASKS = 5;
+    private final List<Long> activeTasks = new ArrayList<>();
+
     @Override
     @Scheduled(cron = "0 0/5 * * * ?")
     public void findBookmarks() throws IOException {
@@ -62,36 +65,51 @@ public class PixivUntaggedIllustTaskPoServiceImpl extends ServiceImpl<PixivUntag
 
         if (pidList.size() > 0) {
             saveBatch(pidList.stream().map(PixivUntaggedIllustTaskPo::new).collect(Collectors.toList()));
-            final long time = ZonedDateTime.now().minusHours(1).toEpochSecond();
-            bookmarkExecutor.execute(() -> {
-                List<Future<PixivIllustPo>> detailsTask = new ArrayList<>();
-                for (Long pid : pidList) {
-                    detailsTask.add(illustPoService.findIllust(pid, time));
-                }
-                for (Future<PixivIllustPo> future : detailsTask) {
-                    PixivIllustPo illust = null;
-                    for (int i = 0; i < 10; i++) {
-                        try {
-                            illust = future.get(1, TimeUnit.MINUTES);
-                            break;
-                        } catch (InterruptedException | ExecutionException | TimeoutException e) {
-                            log.info("第 {} 次请求超时 继续尝试", i + 1);
-                            e.printStackTrace();
-                        }
-                    }
-                    if (illust == null) {
-                        future.cancel(true);
-                        continue;
-                    }
-                    aria2DownloadTaskPoService.addPixivIllust(illust);
-                    removeById(illust.getId());
+        }
+    }
+
+    @Scheduled(cron = "30 * * * * ?")
+    public void execute() {
+        if (activeTasks.size() >= MAX_ACTIVE_TASKS) {
+            return;
+        }
+        final List<Long> pidList = listPid(MAX_ACTIVE_TASKS - activeTasks.size(), activeTasks);
+        if (pidList.size() == 0) {
+            return;
+        }
+        final long time = ZonedDateTime.now().minusHours(1).toEpochSecond();
+        bookmarkExecutor.execute(() -> {
+            List<Future<PixivIllustPo>> detailsTask = new ArrayList<>();
+            for (Long pid : pidList) {
+                activeTasks.add(pid);
+                detailsTask.add(illustPoService.findIllust(pid, time));
+            }
+            for (Future<PixivIllustPo> future : detailsTask) {
+                PixivIllustPo illust = null;
+                for (int i = 0; i < 10; i++) {
                     try {
-                        illustPoService.addTag(illust.getId()).get(30, TimeUnit.SECONDS);
+                        illust = future.get(1, TimeUnit.MINUTES);
+                        break;
                     } catch (InterruptedException | ExecutionException | TimeoutException e) {
+                        log.info("第 {} 次请求超时 继续尝试", i + 1);
                         e.printStackTrace();
                     }
                 }
-            });
-        }
+                if (illust == null) {
+                    future.cancel(true);
+                    continue;
+                }
+                aria2DownloadTaskPoService.addPixivIllust(illust);
+                final Long pid = illust.getId();
+                removeById(pid);
+                activeTasks.remove(pid);
+                try {
+                    illustPoService.addTag(pid).get(30, TimeUnit.SECONDS);
+                } catch (InterruptedException | ExecutionException | TimeoutException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
     }
 }
