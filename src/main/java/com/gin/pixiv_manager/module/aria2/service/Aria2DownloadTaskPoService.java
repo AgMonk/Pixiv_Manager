@@ -13,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -45,12 +44,13 @@ public interface Aria2DownloadTaskPoService extends IService<Aria2DownloadTaskPo
                 LOG.warn("已经有相同任务 pid = {}", illust.getId());
                 return;
             }
-            String filename = illust.getOriginalUrl();
-            filename = filename.substring(filename.lastIndexOf("/") + 1);
+            final String oUrl = illust.getOriginalUrl();
+            final String rUrl2 = oUrl.replace("i.pximg.net", PIXIV_RE_DOMAIN_2);
+            String filename = oUrl.substring(oUrl.lastIndexOf("/") + 1);
             Aria2DownloadTaskPo task = new Aria2DownloadTaskPo();
             task.setDir(pixivPath);
             task.setFileName(filename);
-            task.setUrls(Collections.singletonList(illust.getOriginalUrl()));
+            task.setUrls(List.of(oUrl, rUrl2));
             task.setUuid(uuid);
             task.setType("pixiv-gif");
             task.setPriority(2);
