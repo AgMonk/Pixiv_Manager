@@ -37,13 +37,18 @@ public interface Aria2DownloadTaskPoService extends IService<Aria2DownloadTaskPo
 
         //                动图 添加一个任务
         if (ILLUST_TYPE_GIF.equals(illust.getType())) {
+            String uuid = illust.getId() + "_u0";
+            if (getById(uuid) != null) {
+                LOG.warn("已经有相同任务 pid = {}", illust.getId());
+                return;
+            }
             String filename = illust.getOriginalUrl();
             filename = filename.substring(filename.lastIndexOf("/") + 1);
             Aria2DownloadTaskPo task = new Aria2DownloadTaskPo();
             task.setDir(pixivPath);
             task.setFileName(filename);
             task.setUrls(Collections.singletonList(illust.getOriginalUrl()));
-            task.createUuid();
+            task.setUuid(uuid);
             task.setType("pixiv-gif");
             task.setPriority(2);
             save(task);
@@ -52,6 +57,11 @@ public interface Aria2DownloadTaskPoService extends IService<Aria2DownloadTaskPo
             //                其他 可能添加多个任务
             List<Aria2DownloadTaskPo> taskList = new ArrayList<>();
             for (int i = 0; i < illust.getPageCount(); i++) {
+                final String uuid = illust.getId() + "_p" + i;
+                if (getById(uuid) != null) {
+                    LOG.warn("已经有相同任务 pid = {}", illust.getId());
+                    return;
+                }
                 final String oUrl = illust.getOriginalUrl().replace("_p0", "_p" + i);
                 final String suffix = oUrl.substring(oUrl.lastIndexOf('.'));
                 final String rUrl = PIXIV_RE_DOMAIN + illust.getId() + (i > 0 ? ("-" + i) : "") + suffix;
