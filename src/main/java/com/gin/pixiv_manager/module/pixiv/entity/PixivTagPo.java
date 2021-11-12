@@ -38,6 +38,7 @@ public class PixivTagPo implements Serializable {
     public static final String TYPE_CP = "CP";
     public static final String TYPE_OTHER = "其他";
     public static final String TYPE_BMK_COUNT = "收藏数";
+    public static final String TYPE_POSITION = "部位";
 
     @TableId
     @IsKey
