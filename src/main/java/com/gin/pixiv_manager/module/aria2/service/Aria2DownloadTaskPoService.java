@@ -1,12 +1,14 @@
 package com.gin.pixiv_manager.module.aria2.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.gin.pixiv_manager.module.aria2.entity.Aria2DownloadTaskPo;
 import com.gin.pixiv_manager.module.aria2.utils.request.Aria2Request;
 import com.gin.pixiv_manager.module.aria2.utils.response.Aria2Quest;
 import com.gin.pixiv_manager.module.pixiv.entity.PixivIllustPo;
 import com.gin.pixiv_manager.sys.utils.TimeUtils;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.ZonedDateTime;
@@ -24,7 +26,7 @@ import static com.gin.pixiv_manager.module.pixiv.entity.PixivIllustPo.ILLUST_TYP
 public interface Aria2DownloadTaskPoService extends IService<Aria2DownloadTaskPo> {
     org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(Aria2DownloadTaskPoService.class);
 
-    String ROOT_PATH = "f:/illust";
+    String ROOT_PATH = "h:/illust";
     String PIXIV_RE_DOMAIN = "https://pixiv.re/";
     int MAX_TASKS = 10;
 
@@ -51,6 +53,7 @@ public interface Aria2DownloadTaskPoService extends IService<Aria2DownloadTaskPo
             task.setUuid(uuid);
             task.setType("pixiv-gif");
             task.setPriority(2);
+            task.setTimestamp(ZonedDateTime.now().toEpochSecond());
             save(task);
             LOG.info("添加 1 个 动图任务 {}", illust.getId());
         } else {
@@ -71,9 +74,10 @@ public interface Aria2DownloadTaskPoService extends IService<Aria2DownloadTaskPo
                 task.setDir(pixivPath);
                 task.setFileName(filename);
                 task.setUrls(List.of(oUrl, rUrl));
-                task.createUuid();
+                task.setUuid(uuid);
                 task.setType("pixiv-插画/漫画");
                 task.setPriority(1);
+                task.setTimestamp(ZonedDateTime.now().toEpochSecond());
                 taskList.add(task);
             }
             LOG.info("添加 {} 个 插画/漫画任务 {}", taskList.size(), illust.getId());
@@ -84,10 +88,9 @@ public interface Aria2DownloadTaskPoService extends IService<Aria2DownloadTaskPo
     /**
      * 移除已完成的任务
      */
+    @Scheduled(cron = "0/10 * * * * ?")
     default void removeCompletedTask() {
-        final QueryWrapper<Aria2DownloadTaskPo> qw = new QueryWrapper<>();
-        qw.select("gid").isNotNull("gid");
-        final List<String> gidList = list(qw).stream().map(Aria2DownloadTaskPo::getGid).collect(Collectors.toList());
+        final List<String> gidList = listAllGid();
 //        查询已完成且来自本系统的任务
         final List<String> completedQuest = Aria2Request.tellStop().getResult().stream()
                 .filter(Aria2Quest::isCompleted)
@@ -101,14 +104,22 @@ public interface Aria2DownloadTaskPoService extends IService<Aria2DownloadTaskPo
             remove(qw2);
             completedQuest.forEach(Aria2Request::removeQuest);
         }
-    }
 
-    /**
-     * 执行任务
-     */
-    default void executeTasks() {
         final List<Aria2Quest> activeQuest = Aria2Request.tellActive().getResult();
         final List<Aria2Quest> waitingQuest = Aria2Request.tellWaiting().getResult();
+
+//        发现已被删除的任务
+        List<Aria2Quest> quests = new ArrayList<>(activeQuest);
+        quests.addAll(waitingQuest);
+        gidList.removeAll(quests.stream().map(Aria2Quest::getGid).collect(Collectors.toList()));
+
+        if (gidList.size() > 0) {
+//            有任务被删除 重新下载
+            final UpdateWrapper<Aria2DownloadTaskPo> uw = new UpdateWrapper<>();
+            uw.in("gid", gidList);
+            uw.set("gid", null);
+            update(uw);
+        }
 
         int count = MAX_TASKS - activeQuest.size() - waitingQuest.size();
 
@@ -116,12 +127,28 @@ public interface Aria2DownloadTaskPoService extends IService<Aria2DownloadTaskPo
 //        队列数量较多 不添加新任务
             return;
         }
+//        提交下载
         final QueryWrapper<Aria2DownloadTaskPo> qw = new QueryWrapper<>();
+        qw.isNull("gid");
         qw.orderByDesc("priority");
         qw.orderByAsc("timestamp");
         qw.last("limit " + count);
         final List<Aria2DownloadTaskPo> tasks = list(qw).stream().map(Aria2DownloadTaskPo::execute).collect(Collectors.toList());
-        LOG.info("开始执行 {} 个 任务", tasks.size());
-        updateBatchById(tasks);
+        if (tasks.size() > 0) {
+            LOG.info("开始执行 {} 个 任务", tasks.size());
+            updateBatchById(tasks);
+        }
+
+    }
+
+
+    /**
+     * 查询所有gid
+     * @return 所有gid
+     */
+    default List<String> listAllGid() {
+        final QueryWrapper<Aria2DownloadTaskPo> qw = new QueryWrapper<>();
+        qw.select("gid").isNotNull("gid");
+        return list(qw).stream().map(Aria2DownloadTaskPo::getGid).collect(Collectors.toList());
     }
 }

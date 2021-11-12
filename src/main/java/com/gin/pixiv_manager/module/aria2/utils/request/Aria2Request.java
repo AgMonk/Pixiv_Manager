@@ -26,7 +26,6 @@ public class Aria2Request {
         try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
             HttpPost httpPost = new HttpPost(RPC_URL);
             final String string = JSONObject.toJSONString(param);
-            System.out.println("string = " + string);
             httpPost.setEntity(new StringEntity(string, ContentType.APPLICATION_JSON));
             String responseBody = httpClient.execute(httpPost, httpResponse -> {
                 int status = httpResponse.getStatusLine().getStatusCode();

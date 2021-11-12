@@ -9,6 +9,6 @@ import org.springframework.stereotype.Repository;
  * @author bx002
  */
 @Repository
-@CacheNamespace(flushInterval = 5L * 60 * 1000)
+@CacheNamespace(flushInterval = 1L * 60 * 1000)
 public interface Aria2DownloadTaskPoDao extends BaseMapper<Aria2DownloadTaskPo> {
 }

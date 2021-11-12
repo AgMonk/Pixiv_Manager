@@ -5,9 +5,7 @@ import com.gin.pixiv_manager.module.pixiv.entity.PixivIllustPo;
 import com.gin.pixiv_manager.module.pixiv.utils.pixiv.response.res.PixivResBookmarksAdd;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeoutException;
 
 /**
  * @author bx002
@@ -30,5 +28,10 @@ public interface PixivIllustPoService extends IService<PixivIllustPo> {
      */
     Future<?> findIllust(long pid);
 
-    Future<PixivResBookmarksAdd> addTag(long pid) throws ExecutionException, InterruptedException, TimeoutException;
+    /**
+     * 为作品添加表情
+     * @param pid pid
+     * @return 响应
+     */
+    Future<PixivResBookmarksAdd> addTag(long pid);
 }

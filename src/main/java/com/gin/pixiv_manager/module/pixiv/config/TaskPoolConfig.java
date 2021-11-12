@@ -18,7 +18,7 @@ public class TaskPoolConfig {
 
     @Bean
     public ThreadPoolTaskExecutor bookmarkExecutor() {
-        return getExecutor("bookmark", 2);
+        return getExecutor("bookmark", 3);
     }
 
 }
