@@ -23,8 +23,13 @@ public class TagAnalysisResult implements Serializable {
     public TagAnalysisResult(Collection<PixivTagPo> tags) {
         tags.forEach(tag -> {
             final String finalTranslation = tag.getFinalTranslation();
+            final String type = tag.getType();
+            if (type == null) {
+                other.add(finalTranslation);
+                return;
+            }
             //noinspection EnhancedSwitchMigration
-            switch (tag.getType()) {
+            switch (type) {
                 case PixivTagPo.TYPE_CHARACTER:
                     character.add(finalTranslation);
                     break;

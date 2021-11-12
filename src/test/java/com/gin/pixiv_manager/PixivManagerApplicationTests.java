@@ -33,9 +33,10 @@ class PixivManagerApplicationTests {
 
     @Test
     void contextLoads() throws IOException, ExecutionException, InterruptedException, TimeoutException {
-        illustPoService.findIllust(94079420L, ZonedDateTime.now().minusHours(1).toEpochSecond()).get(1, TimeUnit.MINUTES);
-        final Future<PixivResBookmarksAdd> future = illustPoService.addTag(94079420L);
-        final PixivResBookmarksAdd res = future.get(2, TimeUnit.MINUTES);
+        final long pid = 94046810;
+        illustPoService.findIllust(pid, ZonedDateTime.now().minusHours(1).toEpochSecond()).get(1, TimeUnit.MINUTES);
+        final Future<PixivResBookmarksAdd> future = illustPoService.addTag(pid);
+        final PixivResBookmarksAdd res = future.get(10, TimeUnit.SECONDS);
 
 //        final List<String> illustTagNames = pixivIllustTagPoService.listTagByPid(94079420L);
 //        if (illustTagNames.size() == 0) {

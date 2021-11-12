@@ -28,13 +28,16 @@ import java.util.regex.Pattern;
 @AllArgsConstructor
 public class PixivTagPo implements Serializable {
     public static final Pattern PATTERN_CHARACTER_IP = Pattern.compile("^(.+)\\((.+)\\)$");
+    public static final Pattern PATTERN_BMK_COUNT = Pattern.compile("^(.+?)(\\d+)users入り$");
     public static final String TYPE_CHARACTER = "人物";
-    public static final String TYPE_CHARACTER_IP = "人物+IP";
-    public static final String TYPE_IP = "作品/IP";
+    public static final String TYPE_CHARACTER_IP = "人物+作品";
+    public static final String TYPE_IP = "作品";
     public static final String TYPE_ACTION = "动作";
     public static final String TYPE_CLOTHING = "服装";
+    public static final String TYPE_ITEM = "物品";
     public static final String TYPE_CP = "CP";
     public static final String TYPE_OTHER = "其他";
+    public static final String TYPE_BMK_COUNT = "收藏数";
 
     @TableId
     @IsKey
@@ -74,6 +77,9 @@ public class PixivTagPo implements Serializable {
     public PixivTagPo(PixivTag pixivTag) {
         this.tag = pixivTag.getTag();
         this.originalTranslation = pixivTag.getOriginalTranslation();
+        if (this.originalTranslation != null) {
+            this.originalTranslation = this.originalTranslation.replace("（", "(").replace("）", ")");
+        }
     }
 
     @Override

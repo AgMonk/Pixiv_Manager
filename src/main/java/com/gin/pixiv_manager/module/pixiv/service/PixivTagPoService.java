@@ -9,6 +9,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 
 /**
@@ -41,6 +42,18 @@ public interface PixivTagPoService extends IService<PixivTagPo> {
                 .filter(i -> !existsTags.contains(i.getTag()))
                 .collect(Collectors.toList());
         if (newTags.size() > 0) {
+//            自动判断一部分tag的类型
+            newTags.forEach(tag -> {
+                final Matcher bmkCountMatcher = PixivTagPo.PATTERN_BMK_COUNT.matcher(tag.getTag());
+                if (bmkCountMatcher.find()) {
+                    tag.setType(PixivTagPo.TYPE_BMK_COUNT);
+                }
+                final Matcher charIpMatcher = PixivTagPo.PATTERN_CHARACTER_IP.matcher(tag.getTag());
+                if (charIpMatcher.find()) {
+                    tag.setType(PixivTagPo.TYPE_CHARACTER_IP);
+                }
+            });
+
             saveBatch(newTags);
         }
 

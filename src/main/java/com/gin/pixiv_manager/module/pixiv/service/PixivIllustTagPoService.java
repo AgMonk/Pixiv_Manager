@@ -46,4 +46,5 @@ public interface PixivIllustTagPoService extends IService<PixivIllustTagPo> {
         saveBatch(PixivIllustTagPo.parse(pid, tags));
     }
 
+
 }
