@@ -73,7 +73,11 @@ public class Aria2DownloadTaskPo implements Serializable {
         return option;
     }
 
-    public void execute() {
+    public Aria2DownloadTaskPo execute() {
         this.gid = Aria2Request.addUri(this.urls, this.toOption()).getResult();
+        Aria2DownloadTaskPo entity = new Aria2DownloadTaskPo();
+        entity.setUuid(this.uuid);
+        entity.setGid(this.gid);
+        return entity;
     }
 }

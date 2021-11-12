@@ -71,17 +71,22 @@ public class PixivIllustPo implements Serializable {
 
         this.originalUrl = detail.getUrls().getOriginal();
 
+        //noinspection EnhancedSwitchMigration
         switch (detail.getIllustType()) {
-            case PixivIllust.ILLUST_TYPE_ILLUSTRATION -> this.type = ILLUST_TYPE_ILLUSTRATION;
-            case PixivIllust.ILLUST_TYPE_MANGA -> this.type = ILLUST_TYPE_MANGA;
-            case PixivIllust.ILLUST_TYPE_GIF -> {
-                this.type = ILLUST_TYPE_GIF;
+            case PixivIllust.ILLUST_TYPE_ILLUSTRATION:
+                this.type = ILLUST_TYPE_ILLUSTRATION;
+                break;
+            case PixivIllust.ILLUST_TYPE_MANGA:
+                this.type = ILLUST_TYPE_MANGA;
+                break;
 //                替换动图的地址为压缩包地址
+            case PixivIllust.ILLUST_TYPE_GIF:
+                this.type = ILLUST_TYPE_GIF;
                 this.originalUrl = this.originalUrl
                         .substring(0, this.originalUrl.lastIndexOf("_"))
                         .replace("img-original", "img-zip-ugoira");
                 this.originalUrl += "_ugoira1920x1080.zip";
-            }
+                break;
         }
 
 
