@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @Transactional(rollbackFor = Exception.class)
 @RequiredArgsConstructor
-public class IllustPoServiceImpl extends ServiceImpl<IllustPoDao, PixivIllustPo> implements IllustPoService {
+public class PixivIllustPoServiceImpl extends ServiceImpl<IllustPoDao, PixivIllustPo> implements PixivIllustPoService {
     private final PixivCookieService pixivCookieService;
     private final ThreadPoolTaskExecutor illustExecutor;
     private final PixivUserInfoPoService pixivUserInfoPoService;

@@ -6,10 +6,7 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.gin.pixiv_manager.module.pixiv.utils.pixiv.response.entity.PixivTag;
 import com.gin.pixiv_manager.sys.utils.StringUtils;
-import com.gitee.sunchenbin.mybatis.actable.annotation.Column;
-import com.gitee.sunchenbin.mybatis.actable.annotation.IsKey;
-import com.gitee.sunchenbin.mybatis.actable.annotation.TableComment;
-import com.gitee.sunchenbin.mybatis.actable.annotation.Unique;
+import com.gitee.sunchenbin.mybatis.actable.annotation.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -55,6 +52,7 @@ public class PixivTagPo implements Serializable {
 
     @Column(comment = "重定向到其他Tag", length = 500)
     @TableField(updateStrategy = FieldStrategy.IGNORED)
+    @Index
     String redirect;
 
     @Column(comment = "标签类型")
