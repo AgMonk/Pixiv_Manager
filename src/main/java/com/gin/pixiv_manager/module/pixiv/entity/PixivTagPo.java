@@ -15,6 +15,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
+import java.util.regex.Pattern;
 
 /**
  * Pixiv标签Po
@@ -26,12 +27,14 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PixivTagPo implements Serializable {
+    public static final Pattern PATTERN_CHARACTER_IP = Pattern.compile("^(.+)\\((.+)\\)$");
     public static final String TYPE_CHARACTER = "人物";
     public static final String TYPE_CHARACTER_IP = "人物+IP";
     public static final String TYPE_IP = "作品/IP";
     public static final String TYPE_ACTION = "动作";
     public static final String TYPE_CLOTHING = "服装";
     public static final String TYPE_CP = "CP";
+    public static final String TYPE_OTHER = "其他";
 
     @TableId
     @IsKey

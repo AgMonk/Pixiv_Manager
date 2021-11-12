@@ -1,6 +1,7 @@
 package com.gin.pixiv_manager.module.pixiv.service;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.gin.pixiv_manager.module.bo.TagAnalysisResult;
 import com.gin.pixiv_manager.module.pixiv.dao.IllustPoDao;
 import com.gin.pixiv_manager.module.pixiv.entity.PixivCookie;
 import com.gin.pixiv_manager.module.pixiv.entity.PixivIllustPo;
@@ -22,10 +23,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 /**
@@ -78,14 +76,13 @@ public class IllustPoServiceImpl extends ServiceImpl<IllustPoDao, PixivIllustPo>
     }
 
     @Override
-    public Future<PixivResBookmarksAdd> addTag(long pid) throws ExecutionException, InterruptedException, TimeoutException {
+    public Future<PixivResBookmarksAdd> addTag(long pid) {
         final List<String> illustTagNames = pixivIllustTagPoService.listTagByPid(pid);
         if (illustTagNames.size() == 0) {
             throw new BusinessException(4000, "没有Tag数据，请先请求详情");
         }
         final HashSet<PixivTagPo> pixivTagPos = pixivTagPoService.listSimplified(illustTagNames);
-        final List<String> tags = pixivTagPos.stream().map(PixivTagPo::getFinalTranslation)
-                .filter(Objects::nonNull).distinct().collect(Collectors.toList());
+        final List<String> tags = new TagAnalysisResult(pixivTagPos).getAll();
 
         final PixivCookie pixivCookie = pixivCookieService.get();
         return bookmarkExecutor.submit(() -> {
