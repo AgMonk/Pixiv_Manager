@@ -2,10 +2,15 @@ package com.gin.pixiv_manager.module.pixiv.service;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.gin.pixiv_manager.module.pixiv.dao.IllustPoDao;
-import com.gin.pixiv_manager.module.pixiv.entity.*;
+import com.gin.pixiv_manager.module.pixiv.entity.PixivCookie;
+import com.gin.pixiv_manager.module.pixiv.entity.PixivIllustPo;
+import com.gin.pixiv_manager.module.pixiv.entity.PixivTagPo;
+import com.gin.pixiv_manager.module.pixiv.entity.PixivUserInfoPo;
 import com.gin.pixiv_manager.module.pixiv.utils.pixiv.request.PixivRequest;
 import com.gin.pixiv_manager.module.pixiv.utils.pixiv.response.body.PixivIllustDetail;
+import com.gin.pixiv_manager.module.pixiv.utils.pixiv.response.res.PixivResBookmarksAdd;
 import com.gin.pixiv_manager.module.pixiv.utils.pixiv.response.res.PixivResIllustDetail;
+import com.gin.pixiv_manager.sys.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.AsyncResult;
@@ -15,7 +20,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 /**
@@ -31,6 +41,7 @@ public class IllustPoServiceImpl extends ServiceImpl<IllustPoDao, PixivIllustPo>
     private final PixivUserInfoPoService pixivUserInfoPoService;
     private final PixivTagPoService pixivTagPoService;
     private final PixivIllustTagPoService pixivIllustTagPoService;
+    private final ThreadPoolTaskExecutor bookmarkExecutor;
 
     @Override
     public Future<PixivIllustPo> findIllust(long pid, Long dataUpdatedTime) {
@@ -63,6 +74,29 @@ public class IllustPoServiceImpl extends ServiceImpl<IllustPoDao, PixivIllustPo>
                 }
             }
             return null;
+        });
+    }
+
+    @Override
+    public Future<PixivResBookmarksAdd> addTag(long pid) throws ExecutionException, InterruptedException, TimeoutException {
+        final List<String> illustTagNames = pixivIllustTagPoService.listTagByPid(pid);
+        if (illustTagNames.size() == 0) {
+            throw new BusinessException(4000, "没有Tag数据，请先请求详情");
+        }
+        final HashSet<PixivTagPo> pixivTagPos = pixivTagPoService.listSimplified(illustTagNames);
+        final List<String> tags = pixivTagPos.stream().map(PixivTagPo::getFinalTranslation)
+                .filter(Objects::nonNull).distinct().collect(Collectors.toList());
+
+        final PixivCookie pixivCookie = pixivCookieService.get();
+        return bookmarkExecutor.submit(() -> {
+            final PixivResBookmarksAdd res = PixivRequest.bookmarksAdd(pixivCookie.getCookie(), pixivCookie.getToken(), pid, tags);
+            if (!res.getError() && res.getBody() != null && res.getBody().getLastBookmarkId() != null) {
+                PixivIllustPo entity = new PixivIllustPo();
+                entity.setId(pid);
+                entity.setBookmarkId(res.getBody().getLastBookmarkId());
+                updateById(entity);
+            }
+            return res;
         });
     }
 

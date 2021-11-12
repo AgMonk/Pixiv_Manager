@@ -2,11 +2,9 @@ package com.gin.pixiv_manager.module.pixiv.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.baomidou.mybatisplus.extension.service.IService;
 import com.gin.pixiv_manager.module.pixiv.entity.PixivIllustTagPo;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -37,14 +35,15 @@ public interface PixivIllustTagPoService extends IService<PixivIllustTagPo> {
 
     /**
      * 保存和更新作品的tag
-     * @param pid pid
+     * @param pid  pid
      * @param tags tags
      */
-    default void savePixivIllustTag(long pid,List<String> tags){
+    default void savePixivIllustTag(long pid, List<String> tags) {
         tags.removeAll(listTagByPid(pid));
-        if (tags.size()==0) {
+        if (tags.size() == 0) {
             return;
         }
         saveBatch(PixivIllustTagPo.parse(pid, tags));
     }
+
 }

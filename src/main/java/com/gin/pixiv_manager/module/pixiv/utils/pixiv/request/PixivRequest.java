@@ -13,7 +13,6 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
-import org.apache.http.entity.mime.content.ContentBody;
 import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
@@ -76,12 +75,11 @@ public class PixivRequest {
             HttpPost httpPost = new HttpPost(url);
             httpPost.addHeader("cookie", cookie);
             httpPost.addHeader("x-csrf-token", token);
-            if (json!=null) {
+            if (json != null) {
                 httpPost.setEntity(new StringEntity(JSONObject.toJSONString(json), ContentType.APPLICATION_JSON));
-            }else
-            if (formData!=null) {
+            } else if (formData != null) {
                 final MultipartEntityBuilder builder = MultipartEntityBuilder.create();
-                formData.forEach((k,v)->builder.addPart(k,new StringBody(String.valueOf(v),ContentType.TEXT_PLAIN)));
+                formData.forEach((k, v) -> builder.addPart(k, new StringBody(String.valueOf(v), ContentType.TEXT_PLAIN)));
                 httpPost.setEntity(builder.build());
             }
             log.info("请求开始 url = {}", url);
@@ -139,7 +137,10 @@ public class PixivRequest {
 
 
     public static PixivResBookmarksAdd bookmarksAdd(String cookie, String token, Long pid, List<String> tags) throws IOException {
-        return post(PixivApi.ADD_BOOKMARKS, cookie, token, new PixivParamsBookmarksAdd(pid, tags), null, PixivResBookmarksAdd.class);
+        log.info("为作品添加TAG pid = {} tags = {}", pid, tags);
+        final PixivResBookmarksAdd res = post(PixivApi.ADD_BOOKMARKS, cookie, token, new PixivParamsBookmarksAdd(pid, tags), null, PixivResBookmarksAdd.class);
+        log.info("添加TAG完成 https://www.pixiv.net/bookmark_add.php?type=illust&illust_id={}", pid);
+        return res;
     }
 
     public static PixivResponse<Void> bookmarksDelete(String cooke, String token, Long bookmarkId) throws IOException {

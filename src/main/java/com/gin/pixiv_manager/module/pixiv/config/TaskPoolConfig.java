@@ -13,7 +13,12 @@ import static com.gin.pixiv_manager.sys.config.TaskExecutePool.getExecutor;
 public class TaskPoolConfig {
     @Bean
     public ThreadPoolTaskExecutor illustExecutor() {
-        return getExecutor("illust", 1);
+        return getExecutor("illust", 2);
+    }
+
+    @Bean
+    public ThreadPoolTaskExecutor bookmarkExecutor() {
+        return getExecutor("bookmark", 2);
     }
 
 }

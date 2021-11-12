@@ -16,4 +16,5 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(rollbackFor = Exception.class)
 @RequiredArgsConstructor
 public class PixivIllustTagPoServiceImpl extends ServiceImpl<PixivIllustTagPoDao, PixivIllustTagPo> implements PixivIllustTagPoService {
+
 }

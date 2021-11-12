@@ -35,7 +35,8 @@ public interface Aria2DownloadTaskPoService extends IService<Aria2DownloadTaskPo
     default void addPixivIllust(PixivIllustPo illust) {
         String pixivPath = ROOT_PATH + "/pixiv/" + TimeUtils.DATE_FORMATTER.format(ZonedDateTime.now());
 
-        if (ILLUST_TYPE_GIF.equals(illust.getType())) {//                动图 添加一个任务
+        //                动图 添加一个任务
+        if (ILLUST_TYPE_GIF.equals(illust.getType())) {
             String filename = illust.getOriginalUrl();
             filename = filename.substring(filename.lastIndexOf("/") + 1);
             Aria2DownloadTaskPo task = new Aria2DownloadTaskPo();
@@ -47,7 +48,8 @@ public interface Aria2DownloadTaskPoService extends IService<Aria2DownloadTaskPo
             task.setPriority(2);
             save(task);
             LOG.info("添加 1 个 动图任务 {}", illust.getId());
-        } else {//                其他 可能添加多个任务
+        } else {
+            //                其他 可能添加多个任务
             List<Aria2DownloadTaskPo> taskList = new ArrayList<>();
             for (int i = 0; i < illust.getPageCount(); i++) {
                 final String oUrl = illust.getOriginalUrl().replace("_p0", "_p" + i);

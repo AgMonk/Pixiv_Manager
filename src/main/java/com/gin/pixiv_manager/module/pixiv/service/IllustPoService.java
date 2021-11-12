@@ -2,9 +2,12 @@ package com.gin.pixiv_manager.module.pixiv.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.gin.pixiv_manager.module.pixiv.entity.PixivIllustPo;
+import com.gin.pixiv_manager.module.pixiv.utils.pixiv.response.res.PixivResBookmarksAdd;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeoutException;
 
 /**
  * @author bx002
@@ -26,4 +29,5 @@ public interface IllustPoService extends IService<PixivIllustPo> {
      */
     Future<?> findIllust(long pid);
 
+    Future<PixivResBookmarksAdd> addTag(long pid) throws ExecutionException, InterruptedException, TimeoutException;
 }
