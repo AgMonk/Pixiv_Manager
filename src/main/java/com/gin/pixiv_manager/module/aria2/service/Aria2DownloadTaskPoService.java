@@ -105,6 +105,7 @@ public interface Aria2DownloadTaskPoService extends IService<Aria2DownloadTaskPo
             qw2.in("gid", completedQuest);
             remove(qw2);
             completedQuest.forEach(Aria2Request::removeQuest);
+            gidList.removeAll(completedQuest);
         }
 
         final List<Aria2Quest> activeQuest = Aria2Request.tellActive().getResult();
