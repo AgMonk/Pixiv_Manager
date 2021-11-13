@@ -24,7 +24,7 @@ import java.util.regex.Pattern;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PixivTagPo implements Serializable {
-    public static final Pattern PATTERN_CHARACTER_IP = Pattern.compile("^(.+)\\((.+)\\)$");
+    public static final Pattern PATTERN_CHARACTER_IP = Pattern.compile("^(.+)[(（](.+)[)）]$");
     public static final Pattern PATTERN_BMK_COUNT = Pattern.compile("^(.+?)(\\d+)users入り$");
     public static final String TYPE_CHARACTER = "人物";
     public static final String TYPE_CHARACTER_IP = "人物+作品";

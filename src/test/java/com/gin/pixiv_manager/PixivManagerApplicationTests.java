@@ -1,20 +1,17 @@
 package com.gin.pixiv_manager;
 
 import com.gin.pixiv_manager.module.aria2.service.Aria2DownloadTaskPoService;
-import com.gin.pixiv_manager.module.pixiv.service.IllustPoService;
 import com.gin.pixiv_manager.module.pixiv.service.PixivCookieService;
+import com.gin.pixiv_manager.module.pixiv.service.PixivIllustPoService;
 import com.gin.pixiv_manager.module.pixiv.service.PixivIllustTagPoService;
 import com.gin.pixiv_manager.module.pixiv.service.PixivTagPoService;
-import com.gin.pixiv_manager.module.pixiv.utils.pixiv.response.res.PixivResBookmarksAdd;
+import com.gin.pixiv_manager.sys.utils.JsonUtil;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.io.IOException;
-import java.time.ZonedDateTime;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 @SuppressWarnings("RedundantThrows")
@@ -31,6 +28,7 @@ class PixivManagerApplicationTests {
     @Autowired
     PixivTagPoService pixivTagPoService;
 
+
     @Test
     void contextLoads() throws IOException, ExecutionException, InterruptedException, TimeoutException {
         final long pid = 94046810;
@@ -43,6 +41,8 @@ class PixivManagerApplicationTests {
 //            throw new BusinessException(4000, "没有Tag数据，请先请求详情");
 //        }
 //        final HashSet<PixivTagPo> pixivTagPos = pixivTagPoService.listSimplified(illustTagNames);
+
+        JsonUtil.printJson(pixivTagPoService.createDictionary());
     }
 
 }

@@ -38,14 +38,12 @@ public class TagAnalysisResult implements Serializable {
                     break;
                 case PixivTagPo.TYPE_CHARACTER_IP:
 //                    tag为角色+ip，解析内容
-//                    替换括号
-                    final String trans = finalTranslation.replace("（", "(").replace("）", ")");
-                    final Matcher matcher = PixivTagPo.PATTERN_CHARACTER_IP.matcher(trans);
+                    final Matcher matcher = PixivTagPo.PATTERN_CHARACTER_IP.matcher(finalTranslation);
                     if (matcher.find()) {
                         character.add(matcher.group(1).trim());
                         ip.add(matcher.group(2).trim());
                     } else {
-                        other.add(trans);
+                        other.add(finalTranslation);
                     }
                     break;
                 default:
