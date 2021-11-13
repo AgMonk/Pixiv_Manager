@@ -1,6 +1,7 @@
 package com.gin.pixiv_manager;
 
 import com.gin.pixiv_manager.module.aria2.service.Aria2DownloadTaskPoService;
+import com.gin.pixiv_manager.module.pixiv.bo.TagDictionary;
 import com.gin.pixiv_manager.module.pixiv.service.PixivCookieService;
 import com.gin.pixiv_manager.module.pixiv.service.PixivIllustPoService;
 import com.gin.pixiv_manager.module.pixiv.service.PixivIllustTagPoService;
@@ -42,7 +43,7 @@ class PixivManagerApplicationTests {
 //        }
 //        final HashSet<PixivTagPo> pixivTagPos = pixivTagPoService.listSimplified(illustTagNames);
 
-        JsonUtil.printJson(pixivTagPoService.createDictionary());
+        JsonUtil.printJson(new TagDictionary(pixivTagPoService));
     }
 
 }
