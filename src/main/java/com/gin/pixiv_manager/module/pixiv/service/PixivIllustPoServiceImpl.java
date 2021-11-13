@@ -1,7 +1,7 @@
 package com.gin.pixiv_manager.module.pixiv.service;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.gin.pixiv_manager.module.bo.TagAnalysisResult;
+import com.gin.pixiv_manager.module.pixiv.bo.TagAnalysisResult;
 import com.gin.pixiv_manager.module.pixiv.dao.IllustPoDao;
 import com.gin.pixiv_manager.module.pixiv.entity.PixivCookie;
 import com.gin.pixiv_manager.module.pixiv.entity.PixivIllustPo;

@@ -1,4 +1,4 @@
-package com.gin.pixiv_manager.module.pixiv.service;
+package com.gin.pixiv_manager.module.pixiv.service.task;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.gin.pixiv_manager.module.aria2.service.Aria2DownloadTaskPoService;
@@ -6,6 +6,8 @@ import com.gin.pixiv_manager.module.pixiv.dao.PixivUntaggedIllustTaskPoDao;
 import com.gin.pixiv_manager.module.pixiv.entity.PixivCookie;
 import com.gin.pixiv_manager.module.pixiv.entity.PixivIllustPo;
 import com.gin.pixiv_manager.module.pixiv.entity.tasks.PixivUntaggedIllustTaskPo;
+import com.gin.pixiv_manager.module.pixiv.service.PixivCookieService;
+import com.gin.pixiv_manager.module.pixiv.service.PixivIllustPoService;
 import com.gin.pixiv_manager.module.pixiv.utils.pixiv.request.PixivRequest;
 import com.gin.pixiv_manager.module.pixiv.utils.pixiv.response.body.PixivSearchIllustManga;
 import com.gin.pixiv_manager.module.pixiv.utils.pixiv.response.entity.PixivIllust;

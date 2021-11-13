@@ -1,4 +1,4 @@
-package com.gin.pixiv_manager.module.pixiv.service;
+package com.gin.pixiv_manager.module.pixiv.service.task;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.IService;

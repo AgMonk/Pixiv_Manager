@@ -1,4 +1,4 @@
-package com.gin.pixiv_manager.module.bo;
+package com.gin.pixiv_manager.module.pixiv.bo;
 
 import com.gin.pixiv_manager.module.pixiv.entity.PixivTagPo;
 import lombok.Data;
