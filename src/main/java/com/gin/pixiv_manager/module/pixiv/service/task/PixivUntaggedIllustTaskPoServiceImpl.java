@@ -57,10 +57,13 @@ public class PixivUntaggedIllustTaskPoServiceImpl extends ServiceImpl<PixivUntag
             return;
         }
         final PixivSearchIllustManga body = untagged.getBody();
-        log.info("未分类作品剩余 {} 个", body.getTotal());
+        final Integer total = body.getTotal();
+        if (total == 0) {
+            return;
+        }
+        log.info("未分类作品剩余 {} 个", total);
         final List<Long> pidList = body.getData().stream()
                 .map(PixivIllust::getId).collect(Collectors.toList());
-
         final List<Long> existsPid = listByIds(pidList).stream().map(PixivUntaggedIllustTaskPo::getPid).collect(Collectors.toList());
 
         pidList.removeAll(existsPid);
