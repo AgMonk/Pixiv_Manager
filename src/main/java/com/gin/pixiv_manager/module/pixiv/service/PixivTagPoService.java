@@ -1,5 +1,6 @@
 package com.gin.pixiv_manager.module.pixiv.service;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.gin.pixiv_manager.module.pixiv.entity.PixivTagPo;
 import com.gin.pixiv_manager.sys.utils.StringUtils;
@@ -75,6 +76,34 @@ public interface PixivTagPoService extends IService<PixivTagPo> {
         return new HashSet<>(list);
     }
 
+    /**
+     * 添加查询条件 查询已完成tag（自定义翻译有值的）
+     * @param qw 条件
+     */
+    static void selectCompleted(QueryWrapper<PixivTagPo> qw) {
+        qw.isNotNull("custom_translation");
+    }
+
+    /**
+     * 添加查询条件 查询未完成tag（自定义翻译和重定向均无值的）
+     * @param qw 条件
+     */
+    static void selectUnCompleted(QueryWrapper<PixivTagPo> qw) {
+        qw.isNull("custom_translation").isNull("redirect");
+    }
+
+    /**
+     * 添加查询条件 重定向tag
+     * @param qw 条件
+     */
+    static void selectRedirect(QueryWrapper<PixivTagPo> qw) {
+        qw.isNotNull("redirect");
+    }
+
+    /**
+     * 将列表中出现的含有重定向字段的标签 执行重定向
+     * @param list 列表
+     */
     private void handleRedirect(List<PixivTagPo> list) {
         final List<PixivTagPo> redirectTag = list.stream().filter(i -> i.getRedirect() != null).collect(Collectors.toList());
         if (redirectTag.size() > 0) {
@@ -84,4 +113,6 @@ public interface PixivTagPoService extends IService<PixivTagPo> {
             handleRedirect(list);
         }
     }
+
+
 }

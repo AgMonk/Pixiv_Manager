@@ -42,8 +42,8 @@ public class TagAnalysisResult implements Serializable {
                     final String trans = finalTranslation.replace("（", "(").replace("）", ")");
                     final Matcher matcher = PixivTagPo.PATTERN_CHARACTER_IP.matcher(trans);
                     if (matcher.find()) {
-                        character.add(matcher.group(1));
-                        ip.add(matcher.group(2));
+                        character.add(matcher.group(1).trim());
+                        ip.add(matcher.group(2).trim());
                     } else {
                         other.add(trans);
                     }
