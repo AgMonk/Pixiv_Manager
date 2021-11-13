@@ -9,10 +9,7 @@ import lombok.Data;
 import org.nlpcn.commons.lang.jianfan.JianFan;
 
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 
@@ -227,5 +224,30 @@ public class TagDictionary implements Serializable {
             }
         });
 
+    }
+
+    public List<String> suggest(PixivTagPo tagPo) {
+        final String tag = tagPo.getTag();
+        final String oTag = tagPo.getOriginalTranslation();
+        final List<String> suggests = new ArrayList<>();
+
+        handleTag(suggests, tag);
+        handleTag(suggests, oTag);
+
+        return suggests;
+    }
+
+    private void handleTag(List<String> suggests, String tag) {
+        handleTag(believableDic, suggests, tag);
+        handleTag(questionableDic, suggests, tag);
+    }
+
+    private void handleTag(TreeMap<String, String> dic, List<String> suggests, String tag) {
+//        词汇直接出现
+        if (dic.containsKey(tag)) {
+            suggests.add(dic.get(tag));
+        }
+
+        /*todo*/
     }
 }
