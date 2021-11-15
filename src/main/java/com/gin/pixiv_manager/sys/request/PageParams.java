@@ -4,6 +4,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.validation.annotation.Validated;
 
 import java.io.Serializable;
 
@@ -14,10 +15,11 @@ import java.io.Serializable;
 @Getter
 @Setter
 @ApiModel("分页查询条件")
+@Validated
 public class PageParams<T extends IFilter> implements Serializable {
-    @ApiModelProperty(value = "当前页",required = true,example = "1")
+    @ApiModelProperty(value = "当前页", required = true, example = "1")
     int page = 1;
-    @ApiModelProperty(value = "每页条数",required = true,example = "10")
+    @ApiModelProperty(value = "每页条数", required = true, example = "10")
     int size = 10;
     @ApiModelProperty("其他过滤条件")
     T filter;

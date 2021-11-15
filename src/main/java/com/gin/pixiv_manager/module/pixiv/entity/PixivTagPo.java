@@ -13,6 +13,8 @@ import lombok.NoArgsConstructor;
 import org.springframework.beans.BeanUtils;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Pattern;
 
 /**
@@ -37,6 +39,19 @@ public class PixivTagPo implements Serializable {
     public static final String TYPE_OTHER = "其他";
     public static final String TYPE_BMK_COUNT = "收藏数";
     public static final String TYPE_POSITION = "部位";
+
+    public static final List<String> TYPES = new ArrayList<>(List.of(
+            TYPE_CHARACTER
+            , TYPE_CHARACTER_IP
+            , TYPE_IP
+            , TYPE_ACTION
+            , TYPE_CLOTHING
+            , TYPE_ITEM
+            , TYPE_CP
+            , TYPE_OTHER
+            , TYPE_BMK_COUNT
+            , TYPE_POSITION
+    ));
 
     @TableId
     @IsKey

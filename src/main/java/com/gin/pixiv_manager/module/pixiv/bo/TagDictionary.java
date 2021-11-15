@@ -174,7 +174,7 @@ public class TagDictionary implements Serializable {
             keywords.add(matcher.group(1).trim());
         } else {
             final double c1 = 1.0 * countChinese(tag) / tag.length();
-            final int length = c1 > 0.5 ? 2 : 4;
+            final int length = c1 > 0.5 ? 2 : 5;
             keywords.add(tag.substring(0, Math.min(tag.length(), length)));
             keywords.add(tag.substring(Math.max(0, tag.length() - length)));
         }
@@ -211,10 +211,14 @@ public class TagDictionary implements Serializable {
 
     private static boolean containsKeywords(List<String> keywords, PixivTagPo completedTag) {
         final String tag = completedTag.getTag().toLowerCase();
+        final String cTag = completedTag.getCustomTranslation();
         String oTag = completedTag.getOriginalTranslation();
         oTag = StringUtils.isEmpty(oTag) ? null : oTag.toLowerCase();
         for (String keyword : keywords) {
             if (tag.contains(keyword.toLowerCase())) {
+                return true;
+            }
+            if (cTag.contains(keyword.toLowerCase())) {
                 return true;
             }
             if (oTag != null && oTag.contains(keyword.toLowerCase())) {

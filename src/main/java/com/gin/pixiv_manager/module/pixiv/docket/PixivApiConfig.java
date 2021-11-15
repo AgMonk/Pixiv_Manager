@@ -17,22 +17,22 @@ import springfox.documentation.spring.web.plugins.Docket;
 @EnableKnife4j
 public class PixivApiConfig {
 
-    @Bean(value = "pixivApi")
-    public Docket pixivApi() {
+    @Bean(value = "pixivTag")
+    public Docket pixivTag() {
         return new Docket(DocumentationType.SWAGGER_2)
                 .apiInfo(new ApiInfoBuilder()
-                        .title("Pixiv接口")
-                        .description("Pixiv接口")
+                        .title("Pixiv标签")
+                        .description("Pixiv标签")
                         .termsOfServiceUrl("https//www.baidu.com")
-                        .contact(new Contact("黄俊钢","https://www.baidu.com","hjg719@139.com"))
+                        .contact(new Contact("黄俊钢", "https://www.baidu.com", "hjg719@139.com"))
                         .version("1.0")
                         .build())
                 //分组名称
-                .groupName("Pixiv接口")
+                .groupName("Pixiv标签")
                 .select()
                 //这里指定Controller扫描包路径
                 .apis(RequestHandlerSelectors.basePackage("com.gin"))
-                .paths(PathSelectors.regex("/pixiv/.+"))
+                .paths(PathSelectors.regex("/pixiv/tag.+"))
                 .build();
     }
 
