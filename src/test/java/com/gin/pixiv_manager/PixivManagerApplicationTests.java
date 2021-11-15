@@ -1,22 +1,27 @@
 package com.gin.pixiv_manager;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.gin.pixiv_manager.module.aria2.service.Aria2DownloadTaskPoService;
 import com.gin.pixiv_manager.module.pixiv.bo.TagDictionary;
+import com.gin.pixiv_manager.module.pixiv.entity.PixivTagPo;
 import com.gin.pixiv_manager.module.pixiv.service.PixivCookieService;
 import com.gin.pixiv_manager.module.pixiv.service.PixivIllustPoService;
 import com.gin.pixiv_manager.module.pixiv.service.PixivIllustTagPoService;
 import com.gin.pixiv_manager.module.pixiv.service.PixivTagPoService;
 import com.gin.pixiv_manager.sys.utils.JsonUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 @SuppressWarnings("RedundantThrows")
 @SpringBootTest
+@Slf4j
 class PixivManagerApplicationTests {
     @Autowired
     PixivCookieService pixivCookieService;
@@ -43,7 +48,20 @@ class PixivManagerApplicationTests {
 //        }
 //        final HashSet<PixivTagPo> pixivTagPos = pixivTagPoService.listSimplified(illustTagNames);
 
-        JsonUtil.printJson(new TagDictionary(pixivTagPoService));
+        final TagDictionary dictionary = new TagDictionary(pixivTagPoService);
+        JsonUtil.printJson(dictionary);
+        final QueryWrapper<PixivTagPo> qw = new QueryWrapper<>();
+        TagDictionary.selectUnCompleted(qw);
+        final List<PixivTagPo> list = pixivTagPoService.list(qw);
+
+        for (PixivTagPo tag : list) {
+            final List<String> suggest = dictionary.suggestCustomTranslation(tag);
+            final List<PixivTagPo> suggestRedirect = dictionary.suggestRedirect(tag);
+            log.info("{} ,{}  -> {}", tag.getTag(), tag.getOriginalTranslation(), suggest);
+            if (suggestRedirect.size() > 0) {
+                log.info("重定向建议： {}", suggestRedirect);
+            }
+        }
     }
 
 }

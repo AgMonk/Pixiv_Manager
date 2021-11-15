@@ -10,6 +10,7 @@ import com.gitee.sunchenbin.mybatis.actable.annotation.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.beans.BeanUtils;
 
 import java.io.Serializable;
 import java.util.regex.Pattern;
@@ -98,5 +99,11 @@ public class PixivTagPo implements Serializable {
     @Override
     public int hashCode() {
         return getTag().hashCode();
+    }
+
+    public PixivTagPo copy() {
+        PixivTagPo entity = new PixivTagPo();
+        BeanUtils.copyProperties(this, entity);
+        return entity;
     }
 }

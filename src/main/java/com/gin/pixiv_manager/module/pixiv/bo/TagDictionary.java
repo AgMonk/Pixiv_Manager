@@ -24,6 +24,8 @@ public class TagDictionary implements Serializable {
     final TreeMap<String, String> believableDic = new TreeMap<>();
     final TreeMap<String, String> questionableDic = new TreeMap<>();
 
+    List<PixivTagPo> completedTags;
+
     @JSONField(serialize = false)
     final PixivTagPoService service;
 
@@ -113,7 +115,7 @@ public class TagDictionary implements Serializable {
      * 添加查询条件 查询已完成tag（自定义翻译有值的）
      * @param qw 条件
      */
-    private static void selectCompleted(QueryWrapper<PixivTagPo> qw) {
+    public static void selectCompleted(QueryWrapper<PixivTagPo> qw) {
         qw.isNotNull("custom_translation");
     }
 
@@ -121,7 +123,7 @@ public class TagDictionary implements Serializable {
      * 添加查询条件 查询未完成tag（自定义翻译和重定向均无值的）
      * @param qw 条件
      */
-    private static void selectUnCompleted(QueryWrapper<PixivTagPo> qw) {
+    public static void selectUnCompleted(QueryWrapper<PixivTagPo> qw) {
         qw.isNull("custom_translation").isNull("redirect");
     }
 
@@ -129,7 +131,7 @@ public class TagDictionary implements Serializable {
      * 添加查询条件 重定向tag
      * @param qw 条件
      */
-    private static void selectRedirect(QueryWrapper<PixivTagPo> qw) {
+    public static void selectRedirect(QueryWrapper<PixivTagPo> qw) {
         qw.isNotNull("redirect");
     }
 
@@ -159,42 +161,23 @@ public class TagDictionary implements Serializable {
     }
 
     /**
-     * 处理已完成tag
-     * @param dic 字典
+     * 解析关键字
+     * @param keywords 关键字列表
+     * @param tag      tag
      */
-    private void handleCompletedTags(Map<String, String> dic) {
-        final QueryWrapper<PixivTagPo> qw = new QueryWrapper<>();
-        selectCompleted(qw);
-        final List<PixivTagPo> list = service.list(qw);
-        list.forEach(tag -> {
-            putDic(dic, tag.getTag(), tag.getCustomTranslation());
-            putDic(dic, tag.getOriginalTranslation(), tag.getCustomTranslation());
-
-//          如果是 人物+IP tag 额外处理 解析拆分保存
-            final Matcher cMatcher = PATTERN_CHARACTER_IP.matcher(tag.getCustomTranslation());
-            final Matcher tMatcher = PATTERN_CHARACTER_IP.matcher(tag.getTag());
-            if (cMatcher.find()) {
-                final String cChar = cMatcher.group(1).trim();
-                final String cIp = cMatcher.group(2).trim();
-                if (tMatcher.find()) {
-                    final String tChar = tMatcher.group(1).trim();
-                    final String tIp = tMatcher.group(2).trim();
-                    putDic(dic, tChar, cChar);
-                    putDic(dic, tIp, cIp);
-                }
-                if (tag.getOriginalTranslation() != null) {
-                    final Matcher oMatcher = PATTERN_CHARACTER_IP.matcher(tag.getOriginalTranslation());
-                    if (oMatcher.find()) {
-                        final String oChar = oMatcher.group(1).trim();
-                        final String oIp = oMatcher.group(2).trim();
-                        putDic(dic, oChar, cChar);
-                        putDic(dic, oIp, cIp);
-                    }
-                }
-
-            }
-
-        });
+    private static void parseKeyword(List<String> keywords, String tag) {
+        if (StringUtils.isEmpty(tag)) {
+            return;
+        }
+        final Matcher matcher = PATTERN_CHARACTER_IP.matcher(tag);
+        if (matcher.find()) {
+            keywords.add(matcher.group(1).trim());
+        } else {
+            final double c1 = 1.0 * countChinese(tag) / tag.length();
+            final int length = c1 > 0.5 ? 2 : 4;
+            keywords.add(tag.substring(0, Math.min(tag.length(), length)));
+            keywords.add(tag.substring(Math.max(0, tag.length() - length)));
+        }
     }
 
     /**
@@ -226,18 +209,78 @@ public class TagDictionary implements Serializable {
 
     }
 
-    public List<String> suggest(PixivTagPo tagPo) {
-        final String tag = tagPo.getTag();
-        final String oTag = tagPo.getOriginalTranslation();
+    private static boolean containsKeywords(List<String> keywords, PixivTagPo completedTag) {
+        final String tag = completedTag.getTag().toLowerCase();
+        String oTag = completedTag.getOriginalTranslation();
+        oTag = StringUtils.isEmpty(oTag) ? null : oTag.toLowerCase();
+        for (String keyword : keywords) {
+            if (tag.contains(keyword.toLowerCase())) {
+                return true;
+            }
+            if (oTag != null && oTag.contains(keyword.toLowerCase())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 处理已完成tag
+     * @param dic 字典
+     */
+    private void handleCompletedTags(Map<String, String> dic) {
+        final QueryWrapper<PixivTagPo> qw = new QueryWrapper<>();
+        selectCompleted(qw);
+        this.completedTags = service.list(qw);
+        completedTags.forEach(tag -> {
+            putDic(dic, tag.getTag(), tag.getCustomTranslation());
+            putDic(dic, tag.getOriginalTranslation(), tag.getCustomTranslation());
+
+//          如果是 人物+IP tag 额外处理 解析拆分保存
+            final Matcher cMatcher = PATTERN_CHARACTER_IP.matcher(tag.getCustomTranslation());
+            final Matcher tMatcher = PATTERN_CHARACTER_IP.matcher(tag.getTag());
+            if (cMatcher.find()) {
+                final String cChar = cMatcher.group(1).trim();
+                final String cIp = cMatcher.group(2).trim();
+                if (tMatcher.find()) {
+                    final String tChar = tMatcher.group(1).trim();
+                    final String tIp = tMatcher.group(2).trim();
+                    putDic(dic, tChar, cChar);
+                    putDic(dic, tIp, cIp);
+                }
+                if (tag.getOriginalTranslation() != null) {
+                    final Matcher oMatcher = PATTERN_CHARACTER_IP.matcher(tag.getOriginalTranslation());
+                    if (oMatcher.find()) {
+                        final String oChar = oMatcher.group(1).trim();
+                        final String oIp = oMatcher.group(2).trim();
+                        putDic(dic, oChar, cChar);
+                        putDic(dic, oIp, cIp);
+                    }
+                }
+
+            }
+
+        });
+    }
+
+    /**
+     * 自定义翻译建议
+     * @param tagPo tag
+     * @return 自定义翻译建议
+     */
+    public List<String> suggestCustomTranslation(PixivTagPo tagPo) {
         final List<String> suggests = new ArrayList<>();
 
-        handleTag(suggests, tag);
-        handleTag(suggests, oTag);
+        handleTag(suggests, tagPo.getTag());
+        handleTag(suggests, tagPo.getOriginalTranslation());
 
-        return suggests;
+        return suggests.stream().distinct().collect(Collectors.toList());
     }
 
     private void handleTag(List<String> suggests, String tag) {
+        if (StringUtils.isEmpty(tag)) {
+            return;
+        }
         handleTag(believableDic, suggests, tag);
         handleTag(questionableDic, suggests, tag);
     }
@@ -248,6 +291,43 @@ public class TagDictionary implements Serializable {
             suggests.add(dic.get(tag));
         }
 
+//      原tag是 人物+IP 结构
+        final Matcher matcher = PATTERN_CHARACTER_IP.matcher(tag);
+        if (matcher.find()) {
+            final String character = matcher.group(1).trim();
+            final String ip = matcher.group(2).trim();
+            final String tCharacter = dic.get(character);
+            final String tIp = dic.get(ip);
+            if (dic.containsKey(character) && dic.containsKey(ip)) {
+                suggests.add(String.format("%s(%s)", tCharacter, tIp));
+            } else if (dic.containsKey(character)) {
+                suggests.add(String.format("%s(%s)", tCharacter, ip));
+            } else if (dic.containsKey(ip)) {
+                suggests.add(String.format("%s(%s)", character, tIp));
+            }
+        }
+
         /*todo*/
+    }
+
+    /**
+     * 重定向建议
+     */
+    public List<PixivTagPo> suggestRedirect(PixivTagPo tagPo) {
+//     解析关键字
+        List<String> keywords = new ArrayList<>();
+        parseKeyword(keywords, tagPo.getTag());
+        parseKeyword(keywords, tagPo.getOriginalTranslation());
+
+//        在已完成tag中查询关键字
+        final List<PixivTagPo> suggests = new ArrayList<>();
+
+        for (PixivTagPo completedTag : this.completedTags) {
+            if (containsKeywords(keywords, completedTag)) {
+                suggests.add(completedTag);
+            }
+        }
+
+        return suggests.stream().distinct().collect(Collectors.toList());
     }
 }
