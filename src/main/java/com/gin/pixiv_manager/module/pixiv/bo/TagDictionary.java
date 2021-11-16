@@ -106,7 +106,7 @@ public class TagDictionary implements Serializable {
     static void putChineseWhenNotContain(Map<String, String> dic, String s1, String s2, double c1, double c2, String reason) {
         if (!dic.containsKey(s1)) {
             final String j2 = JianFan.f2j(s2);
-            System.out.printf("%s(%s)(%s) -> %s(%s)\n", s1, c1, reason, j2, c2);
+        //    System.out.printf("%s(%s)(%s) -> %s(%s)\n", s1, c1, reason, j2, c2);
             dic.put(s1, j2);
         }
     }
@@ -328,7 +328,7 @@ public class TagDictionary implements Serializable {
 
         for (PixivTagPo completedTag : this.completedTags) {
             if (containsKeywords(keywords, completedTag)) {
-                suggests.add(completedTag);
+                suggests.add(completedTag.copy());
             }
         }
 

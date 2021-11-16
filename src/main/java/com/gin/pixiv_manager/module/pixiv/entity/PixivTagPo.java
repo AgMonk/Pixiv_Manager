@@ -38,6 +38,7 @@ public class PixivTagPo implements Serializable {
     public static final String TYPE_OTHER = "其他";
     public static final String TYPE_BMK_COUNT = "收藏数";
     public static final String TYPE_POSITION = "部位";
+    public static final String TYPE_HAIRSTYLE = "发型";
 
     public static final List<String> TYPES = new ArrayList<>(List.of(
             TYPE_CHARACTER
@@ -50,6 +51,7 @@ public class PixivTagPo implements Serializable {
             , TYPE_OTHER
             , TYPE_BMK_COUNT
             , TYPE_POSITION
+            , TYPE_HAIRSTYLE
     ));
 
     @TableId
@@ -73,6 +75,13 @@ public class PixivTagPo implements Serializable {
     @Column(comment = "标签类型")
     @TableField(updateStrategy = FieldStrategy.IGNORED)
     String type;
+
+    @TableField(exist = false)
+    List<String> suggest;
+
+    @TableField(exist = false)
+    List<PixivTagPo> suggestRedirect;
+
 
     public PixivTagPo(PixivTag pixivTag) {
         this.tag = pixivTag.getTag();

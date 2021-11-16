@@ -33,6 +33,8 @@ public class PixivTagPo4Set implements Serializable {
             , TYPE_CP
             , TYPE_OTHER
             , TYPE_BMK_COUNT
-            , TYPE_POSITION})
+            , TYPE_POSITION
+            , TYPE_HAIRSTYLE
+    })
     String type;
 }

@@ -68,6 +68,13 @@ public class PixivTagPoController {
 //      后续处理
         List<PixivTagPo> records = page.getRecords();
 
+        final TagDictionary dic = new TagDictionary(service);
+
+        for (PixivTagPo tag : records) {
+            tag.setSuggest(dic.suggestCustomTranslation(tag));
+            tag.setSuggestRedirect(dic.suggestRedirect(tag));
+        }
+
         return Res.success("查询" + NAMESPACE + "分页数据成功", page);
     }
 
