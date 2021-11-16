@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.gin.pixiv_manager.module.pixiv.entity.PixivIllustTagPo;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -46,5 +47,10 @@ public interface PixivIllustTagPoService extends IService<PixivIllustTagPo> {
         saveBatch(PixivIllustTagPo.parse(pid, tags));
     }
 
+    default List<PixivIllustTagPo> listPidByTag(Collection<String> tag) {
+        final QueryWrapper<PixivIllustTagPo> qw = new QueryWrapper<>();
+        qw.in("tag", tag);
+        return list(qw);
+    }
 
 }

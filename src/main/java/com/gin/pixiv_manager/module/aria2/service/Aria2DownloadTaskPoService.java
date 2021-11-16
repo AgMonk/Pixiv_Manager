@@ -11,6 +11,8 @@ import com.gin.pixiv_manager.sys.utils.TimeUtils;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.File;
+import java.io.IOException;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -156,4 +158,8 @@ public interface Aria2DownloadTaskPoService extends IService<Aria2DownloadTaskPo
         qw.select("gid").isNotNull("gid");
         return list(qw).stream().map(Aria2DownloadTaskPo::getGid).collect(Collectors.toList());
     }
+
+    List<File> getAllFiles(String prefix);
+
+    void updateAllFileList() throws IOException;
 }

@@ -82,6 +82,9 @@ public class PixivTagPo implements Serializable {
     @TableField(exist = false)
     List<PixivTagPo> suggestRedirect;
 
+    @TableField(exist = false)
+    List<String> examples;
+
 
     public PixivTagPo(PixivTag pixivTag) {
         this.tag = pixivTag.getTag();
