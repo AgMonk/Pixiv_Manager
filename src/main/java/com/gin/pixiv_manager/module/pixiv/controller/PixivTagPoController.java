@@ -115,6 +115,7 @@ public class PixivTagPoController {
                         return false;
                     })
                     .map(File::getPath)
+                    .filter(path -> !path.endsWith("zip"))
                     .map(path -> path.replace("\\", "/"))
                     .map(path -> path.substring(path.indexOf("/pixiv")))
                     .sorted((o1, o2) -> o2.compareToIgnoreCase(o1))

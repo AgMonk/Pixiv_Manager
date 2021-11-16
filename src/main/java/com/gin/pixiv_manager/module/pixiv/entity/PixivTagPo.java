@@ -39,6 +39,10 @@ public class PixivTagPo implements Serializable {
     public static final String TYPE_BMK_COUNT = "收藏数";
     public static final String TYPE_POSITION = "部位";
     public static final String TYPE_HAIRSTYLE = "发型";
+    public static final String TYPE_COLOR = "颜色";
+    public static final String TYPE_ADJECTIVE = "形容词";
+    public static final String TYPE_ORGANIZATION = "组织";
+    public static final String TYPE_SKIN = "皮肤";
 
     public static final List<String> TYPES = new ArrayList<>(List.of(
             TYPE_CHARACTER
@@ -48,10 +52,14 @@ public class PixivTagPo implements Serializable {
             , TYPE_CLOTHING
             , TYPE_ITEM
             , TYPE_CP
-            , TYPE_OTHER
             , TYPE_BMK_COUNT
             , TYPE_POSITION
             , TYPE_HAIRSTYLE
+            , TYPE_COLOR
+            , TYPE_ADJECTIVE
+            , TYPE_SKIN
+            , TYPE_ORGANIZATION
+            , TYPE_OTHER
     ));
 
     @TableId

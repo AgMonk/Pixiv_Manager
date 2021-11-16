@@ -24,17 +24,22 @@ public class PixivTagPo4Set implements Serializable {
     @NotEmpty("translation")
     String translation;
     @ApiModelProperty(value = "类型", required = true)
-    @EffectiveValues(prefix = "类型", values = {TYPE_CHARACTER
+    @EffectiveValues(prefix = "类型", values = {
+            TYPE_CHARACTER
             , TYPE_CHARACTER_IP
             , TYPE_IP
             , TYPE_ACTION
             , TYPE_CLOTHING
             , TYPE_ITEM
             , TYPE_CP
-            , TYPE_OTHER
             , TYPE_BMK_COUNT
             , TYPE_POSITION
             , TYPE_HAIRSTYLE
+            , TYPE_COLOR
+            , TYPE_ADJECTIVE
+            , TYPE_SKIN
+            , TYPE_ORGANIZATION
+            , TYPE_OTHER
     })
     String type;
 }

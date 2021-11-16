@@ -43,6 +43,9 @@ spring:
       connect-properties: druid.stat.mergeSql\=true;druid.stat.slowSqlMillis\=5000
   web:
     resources:
+      cache:
+        cachecontrol:
+          max-age: 60s
       static-locations: classpath:/META-INF/resources/,classpath:/resources/,classpath:/static/,classpath:/public/,file:${rootPath}
 
 # actable的配置信息
