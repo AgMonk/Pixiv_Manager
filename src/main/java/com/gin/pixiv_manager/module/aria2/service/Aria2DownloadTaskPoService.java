@@ -25,17 +25,18 @@ import static com.gin.pixiv_manager.module.pixiv.entity.PixivIllustPo.ILLUST_TYP
 public interface Aria2DownloadTaskPoService extends IService<Aria2DownloadTaskPo> {
     org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(Aria2DownloadTaskPoService.class);
 
-    String ROOT_PATH = "h:/illust";
     String PIXIV_RE_DOMAIN = "https://pixiv.re/";
     String PIXIV_RE_DOMAIN_2 = "i.pixiv.re";
     int MAX_TASKS = 10;
+
+    String getRootPath();
 
     /**
      * 下载一个Pixiv作品
      * @param illust 作品详情
      */
     default void addPixivIllust(PixivIllustPo illust) {
-        String pixivPath = ROOT_PATH + "/pixiv/" + TimeUtils.DATE_FORMATTER.format(ZonedDateTime.now());
+        String pixivPath = getRootPath() + "/pixiv/" + TimeUtils.DATE_FORMATTER.format(ZonedDateTime.now());
 
         //                动图 添加一个任务
         if (ILLUST_TYPE_GIF.equals(illust.getType())) {

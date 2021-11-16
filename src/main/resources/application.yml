@@ -11,6 +11,7 @@ druid:
   mysql:
     usePingMethod: false
 
+rootPath: h:/illust
 
 
 server:
@@ -40,6 +41,9 @@ spring:
       max-pool-prepared-statement-per-connection-size: 20
       filters: stat,wall,slf4j
       connect-properties: druid.stat.mergeSql\=true;druid.stat.slowSqlMillis\=5000
+  web:
+    resources:
+      static-locations: classpath:/META-INF/resources/,classpath:/resources/,classpath:/static/,classpath:/public/,file:${rootPath}
 
 # actable的配置信息
 actable:

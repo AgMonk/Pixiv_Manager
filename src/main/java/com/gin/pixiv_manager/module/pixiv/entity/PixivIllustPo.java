@@ -14,6 +14,7 @@ import org.springframework.beans.BeanUtils;
 
 import java.io.Serializable;
 import java.time.ZonedDateTime;
+import java.util.regex.Pattern;
 
 /**
  * 作品详情PO
@@ -28,6 +29,8 @@ public class PixivIllustPo implements Serializable {
     public final static String ILLUST_TYPE_ILLUSTRATION = "插画";
     public final static String ILLUST_TYPE_MANGA = "漫画";
     public final static String ILLUST_TYPE_GIF = "动图";
+    public final static Pattern ILLUST_FILE_NAME_PATTERN = Pattern.compile("(\\d+)_p(\\d+)");
+    public final static Pattern ILLUST_GIF_FILE_NAME_PATTERN = Pattern.compile("(\\d+)_ugoira1920x1080");
 
     @TableId
     @IsKey
