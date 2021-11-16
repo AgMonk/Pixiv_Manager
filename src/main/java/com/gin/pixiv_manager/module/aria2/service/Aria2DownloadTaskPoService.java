@@ -94,7 +94,8 @@ public interface Aria2DownloadTaskPoService extends IService<Aria2DownloadTaskPo
     default void removeCompletedTask() {
         final List<String> gidList = listAllGid();
 //        查询已完成且来自本系统的任务
-        final List<String> completedQuest = Aria2Request.tellStop().getResult().stream()
+        final List<Aria2Quest> stopQuest = Aria2Request.tellStop().getResult();
+        final List<String> completedQuest = stopQuest.stream()
                 .filter(Aria2Quest::isCompleted)
                 .map(Aria2Quest::getGid)
                 .filter(gidList::contains)

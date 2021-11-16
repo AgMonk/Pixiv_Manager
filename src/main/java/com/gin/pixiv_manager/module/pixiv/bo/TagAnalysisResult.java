@@ -1,6 +1,7 @@
 package com.gin.pixiv_manager.module.pixiv.bo;
 
 import com.gin.pixiv_manager.module.pixiv.entity.PixivTagPo;
+import com.gin.pixiv_manager.sys.utils.StringUtils;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -22,7 +23,10 @@ public class TagAnalysisResult implements Serializable {
 
     public TagAnalysisResult(Collection<PixivTagPo> tags) {
         tags.forEach(tag -> {
-            final String finalTranslation = tag.getFinalTranslation();
+            final String finalTranslation =
+                    !StringUtils.isEmpty(tag.getCustomTranslation()) ? tag.getCustomTranslation() : (
+                            !StringUtils.isEmpty(tag.getOriginalTranslation()) ? tag.getOriginalTranslation() : tag.getTag()
+                    );
             final String type = tag.getType();
             if (type == null) {
                 other.add(finalTranslation);

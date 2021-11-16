@@ -5,7 +5,6 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.gin.pixiv_manager.module.pixiv.utils.pixiv.response.entity.PixivTag;
-import com.gin.pixiv_manager.sys.utils.StringUtils;
 import com.gitee.sunchenbin.mybatis.actable.annotation.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -74,20 +73,6 @@ public class PixivTagPo implements Serializable {
     @Column(comment = "标签类型")
     @TableField(updateStrategy = FieldStrategy.IGNORED)
     String type;
-
-    /**
-     * 最终显示的tag名称 优先级为 自定义翻译>原翻译>原名称
-     * @return 最终显示的tag名称
-     */
-    public String getFinalTranslation() {
-        if (!StringUtils.isEmpty(customTranslation)) {
-            return customTranslation;
-        }
-        if (!StringUtils.isEmpty(originalTranslation)) {
-            return originalTranslation;
-        }
-        return tag;
-    }
 
     public PixivTagPo(PixivTag pixivTag) {
         this.tag = pixivTag.getTag();

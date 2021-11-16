@@ -48,6 +48,11 @@ public class PixivTagPoController {
         return Res.success("查询所有已完成标签成功", service.list(qw));
     }
 
+    @PostMapping("findAllTypes")
+    @ApiOperation(value = "查询所有标签分类")
+    public Res<List<String>> findAllTypes() {
+        return Res.success("查询所有标签分类成功", PixivTagPo.TYPES);
+    }
 
     @PostMapping("page")
     @ApiOperation(value = "查询分页" + NAMESPACE)
