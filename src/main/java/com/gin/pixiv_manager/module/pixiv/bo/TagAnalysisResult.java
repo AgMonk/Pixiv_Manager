@@ -17,6 +17,7 @@ import java.util.regex.Matcher;
  */
 @Data
 public class TagAnalysisResult implements Serializable {
+    Long pid;
     HashSet<String> ip = new HashSet<>();
     HashSet<String> character = new HashSet<>();
     HashSet<String> other = new HashSet<>();
@@ -42,6 +43,7 @@ public class TagAnalysisResult implements Serializable {
                     break;
                 case PixivTagPo.TYPE_CHARACTER_IP:
 //                    tag为角色+ip，解析内容
+                {
                     final Matcher matcher = PixivTagPo.PATTERN_CHARACTER_IP.matcher(finalTranslation);
                     if (matcher.find()) {
                         character.add(matcher.group(1).trim());
@@ -49,7 +51,19 @@ public class TagAnalysisResult implements Serializable {
                     } else {
                         other.add(finalTranslation);
                     }
-                    break;
+                }
+                break;
+                case PixivTagPo.TYPE_BMK_COUNT:
+//                    tag为角色+ip，解析内容
+                {
+                    final Matcher matcher = PixivTagPo.PATTERN_BMK_COUNT.matcher(finalTranslation);
+                    if (matcher.find()) {
+                        ip.add(matcher.group(1).trim());
+                    } else {
+                        other.add(finalTranslation);
+                    }
+                }
+                break;
                 default:
                     other.add(finalTranslation);
             }

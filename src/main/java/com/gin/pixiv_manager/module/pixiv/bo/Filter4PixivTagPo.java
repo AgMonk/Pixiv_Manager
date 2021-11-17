@@ -30,7 +30,6 @@ public class Filter4PixivTagPo implements Serializable, IFilter {
         switch (type) {
             case TYPE_1:
                 TagDictionary.selectUnCompleted(qw);
-                qw.notLike("tag", "users入");
                 break;
             case TYPE_2:
                 TagDictionary.selectCompleted(qw);

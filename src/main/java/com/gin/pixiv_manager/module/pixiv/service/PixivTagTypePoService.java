@@ -37,7 +37,7 @@ public interface PixivTagTypePoService extends IService<PixivTagTypePo> {
 
     default List<PixivTagTypePo> listAll() {
         final QueryWrapper<PixivTagTypePo> qw = new QueryWrapper<>();
-        qw.orderByDesc("order");
+        qw.orderByDesc("order_no");
         return list(qw);
     }
 

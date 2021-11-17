@@ -31,7 +31,7 @@ public class PixivTagTypePo implements Serializable {
     String name;
 
     @Column(comment = "排序", isNull = false, defaultValue = "50")
-    Integer order;
+    Integer orderNo;
 
     public PixivTagTypePo(String name) {
         this.name = name;
