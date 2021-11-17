@@ -11,6 +11,7 @@ import com.gin.pixiv_manager.module.pixiv.service.PixivIllustPoService;
 import com.gin.pixiv_manager.module.pixiv.utils.pixiv.request.PixivRequest;
 import com.gin.pixiv_manager.module.pixiv.utils.pixiv.response.body.PixivSearchIllustManga;
 import com.gin.pixiv_manager.module.pixiv.utils.pixiv.response.entity.PixivIllust;
+import com.gin.pixiv_manager.module.pixiv.utils.pixiv.response.entity.PixivSearchIllust;
 import com.gin.pixiv_manager.module.pixiv.utils.pixiv.response.res.PixivResBookmarks;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -62,7 +63,21 @@ public class PixivUntaggedIllustTaskPoServiceImpl extends ServiceImpl<PixivUntag
             return;
         }
         log.info("未分类作品剩余 {} 个", total);
-        final List<Long> pidList = body.getData().stream()
+        final List<PixivSearchIllust> data = body.getData().stream().filter(i -> {
+            if (i.getUserId() == 0) {
+                log.warn("作品已经被删除 移除收藏 pid = " + i.getId());
+                bookmarkExecutor.execute(() -> {
+                    try {
+                        PixivRequest.bookmarksDelete(pixivCookie.getCookie(), pixivCookie.getToken(), i.getBookmarkData().getId());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                });
+                return false;
+            }
+            return true;
+        }).collect(Collectors.toList());
+        final List<Long> pidList = data.stream()
                 .map(PixivIllust::getId).collect(Collectors.toList());
         final List<Long> existsPid = listByIds(pidList).stream().map(PixivUntaggedIllustTaskPo::getPid).collect(Collectors.toList());
 
