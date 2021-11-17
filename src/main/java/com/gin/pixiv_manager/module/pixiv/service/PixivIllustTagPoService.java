@@ -3,8 +3,10 @@ package com.gin.pixiv_manager.module.pixiv.service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.gin.pixiv_manager.module.pixiv.entity.PixivIllustTagPo;
+import com.gin.pixiv_manager.sys.utils.StringUtils;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -48,6 +50,9 @@ public interface PixivIllustTagPoService extends IService<PixivIllustTagPo> {
     }
 
     default List<PixivIllustTagPo> listPidByTag(Collection<String> tag) {
+        if (StringUtils.isEmpty(tag)) {
+            return new ArrayList<>();
+        }
         final QueryWrapper<PixivIllustTagPo> qw = new QueryWrapper<>();
         qw.in("tag", tag);
         return list(qw);

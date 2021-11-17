@@ -12,7 +12,6 @@ import lombok.NoArgsConstructor;
 import org.springframework.beans.BeanUtils;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -31,36 +30,19 @@ public class PixivTagPo implements Serializable {
     public static final String TYPE_CHARACTER = "人物";
     public static final String TYPE_CHARACTER_IP = "人物+作品";
     public static final String TYPE_IP = "作品";
-    public static final String TYPE_ACTION = "动作";
-    public static final String TYPE_CLOTHING = "服装";
-    public static final String TYPE_ITEM = "物品";
-    public static final String TYPE_CP = "CP";
-    public static final String TYPE_OTHER = "其他";
     public static final String TYPE_BMK_COUNT = "收藏数";
-    public static final String TYPE_POSITION = "部位";
-    public static final String TYPE_HAIRSTYLE = "发型";
-    public static final String TYPE_COLOR = "颜色";
-    public static final String TYPE_ADJECTIVE = "形容词";
-    public static final String TYPE_ORGANIZATION = "组织";
-    public static final String TYPE_SKIN = "皮肤";
+//    public static final String TYPE_ACTION = "动作";
+//    public static final String TYPE_CLOTHING = "服装";
+//    public static final String TYPE_ITEM = "物品";
+//    public static final String TYPE_CP = "CP";
+//    public static final String TYPE_OTHER = "其他";
+//    public static final String TYPE_POSITION = "部位";
+//    public static final String TYPE_HAIRSTYLE = "发型";
+//    public static final String TYPE_COLOR = "颜色";
+//    public static final String TYPE_ADJECTIVE = "形容词";
+//    public static final String TYPE_ORGANIZATION = "组织";
+//    public static final String TYPE_SKIN = "皮肤";
 
-    public static final List<String> TYPES = new ArrayList<>(List.of(
-            TYPE_CHARACTER
-            , TYPE_CHARACTER_IP
-            , TYPE_IP
-            , TYPE_ACTION
-            , TYPE_CLOTHING
-            , TYPE_ITEM
-            , TYPE_CP
-            , TYPE_BMK_COUNT
-            , TYPE_POSITION
-            , TYPE_HAIRSTYLE
-            , TYPE_COLOR
-            , TYPE_ADJECTIVE
-            , TYPE_SKIN
-            , TYPE_ORGANIZATION
-            , TYPE_OTHER
-    ));
 
     @TableId
     @IsKey

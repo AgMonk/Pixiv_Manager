@@ -11,6 +11,7 @@ import com.gin.pixiv_manager.module.pixiv.entity.PixivIllustTagPo;
 import com.gin.pixiv_manager.module.pixiv.entity.PixivTagPo;
 import com.gin.pixiv_manager.module.pixiv.service.PixivIllustTagPoService;
 import com.gin.pixiv_manager.module.pixiv.service.PixivTagPoService;
+import com.gin.pixiv_manager.module.pixiv.service.PixivTagTypePoService;
 import com.gin.pixiv_manager.sys.request.PageParams;
 import com.gin.pixiv_manager.sys.response.Res;
 import com.gin.pixiv_manager.sys.utils.StringUtils;
@@ -48,6 +49,7 @@ public class PixivTagPoController {
     private final PixivTagPoService service;
     private final Aria2DownloadTaskPoService aria2DownloadTaskPoService;
     private final PixivIllustTagPoService pixivIllustTagPoService;
+    private final PixivTagTypePoService pixivTagTypePoService;
 
     @PostMapping("findAllCompletedTags")
     @ApiOperation(value = "查询所有已完成标签")
@@ -62,7 +64,7 @@ public class PixivTagPoController {
     @PostMapping("findAllTypes")
     @ApiOperation(value = "查询所有标签分类")
     public Res<List<String>> findAllTypes() {
-        return Res.success("查询所有标签分类成功", PixivTagPo.TYPES);
+        return Res.success("查询所有标签分类成功", pixivTagTypePoService.listAllName());
     }
 
     @PostMapping("page")
@@ -134,6 +136,9 @@ public class PixivTagPoController {
     public Res<Void> setCustomTranslation(@Validated @RequestBody PixivTagPo4Set pixivTagPo4Set) {
         final String translation = pixivTagPo4Set.getTranslation();
         final String tag = pixivTagPo4Set.getTag();
+        final String type = pixivTagPo4Set.getType();
+
+        pixivTagTypePoService.validTypeName(type);
 
         final QueryWrapper<PixivTagPo> qw = new QueryWrapper<>();
         qw.eq("custom_translation", translation);
@@ -149,7 +154,7 @@ public class PixivTagPoController {
         }
         PixivTagPo entity = service.getById(tag);
         entity.setCustomTranslation(translation);
-        entity.setType(pixivTagPo4Set.getType());
+        entity.setType(type);
         service.updateById(entity);
         return Res.success("设置自定义翻译成功");
     }

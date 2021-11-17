@@ -1,10 +1,7 @@
 package com.gin.pixiv_manager;
 
 import com.gin.pixiv_manager.module.aria2.service.Aria2DownloadTaskPoService;
-import com.gin.pixiv_manager.module.pixiv.service.PixivCookieService;
-import com.gin.pixiv_manager.module.pixiv.service.PixivIllustPoService;
-import com.gin.pixiv_manager.module.pixiv.service.PixivIllustTagPoService;
-import com.gin.pixiv_manager.module.pixiv.service.PixivTagPoService;
+import com.gin.pixiv_manager.module.pixiv.service.*;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +25,8 @@ class PixivManagerApplicationTests {
     PixivIllustTagPoService pixivIllustTagPoService;
     @Autowired
     PixivTagPoService pixivTagPoService;
+    @Autowired
+    PixivTagTypePoService pixivTagTypePoService;
 
 
     @Test
