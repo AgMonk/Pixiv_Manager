@@ -54,11 +54,23 @@ public class TagAnalysisResult implements Serializable {
                 }
                 break;
                 case PixivTagPo.TYPE_BMK_COUNT:
-//                    tag为角色+ip，解析内容
+//                    tag为收藏数，解析内容
                 {
                     final Matcher matcher = PixivTagPo.PATTERN_BMK_COUNT.matcher(finalTranslation);
                     if (matcher.find()) {
                         ip.add(matcher.group(1).trim());
+                    } else {
+                        other.add(finalTranslation);
+                    }
+                }
+                break;
+                case PixivTagPo.TYPE_SKIN:
+//                    tag为皮肤，解析内容
+                {
+                    final Matcher matcher = PixivTagPo.PATTERN_SKIN.matcher(finalTranslation);
+                    if (matcher.find()) {
+                        character.add(matcher.group(1).trim());
+                        other.add(matcher.group(2).trim());
                     } else {
                         other.add(finalTranslation);
                     }

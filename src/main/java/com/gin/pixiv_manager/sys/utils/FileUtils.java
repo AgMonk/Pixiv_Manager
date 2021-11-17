@@ -1,5 +1,7 @@
 package com.gin.pixiv_manager.sys.utils;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -11,9 +13,14 @@ import java.util.stream.Collectors;
  * 文件操作工具类
  * @author bx002
  */
+@Slf4j
 public class FileUtils {
     public static List<File> listAllFiles(String path) throws IOException {
         return listAllFiles(new File(path));
+    }
+
+    public static void move(File src, String destPath) throws IOException {
+        move(src, new File(destPath));
     }
 
     public static void move(File src, File dest) throws IOException {
@@ -23,6 +30,7 @@ public class FileUtils {
         if (!src.renameTo(dest)) {
             throw new IOException(String.format("移动失败 %s -> %s", src.getPath(), dest.getPath()));
         }
+        log.info("已移动文件 {} -> {}", src.getPath(), dest.getPath());
     }
 
     public static List<File> listAllFiles(File dir) throws IOException {
@@ -48,6 +56,20 @@ public class FileUtils {
             return new ArrayList<>();
         }
         return Arrays.stream(files).collect(Collectors.toList());
+    }
+
+    public static String deleteIllegalChar(String s) {
+        return s
+                .replace("?", "_")
+                .replace("|", "_")
+                .replace("<", "_")
+                .replace(">", "_")
+                .replace("\"", "_")
+                .replace("*", "_")
+                .replace(":", "_")
+//                .replace("/","_")
+//                .replace("\\","_")
+                ;
     }
 
     public static void mkDirs(File dir) throws IOException {

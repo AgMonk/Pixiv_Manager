@@ -6,7 +6,9 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.gin.pixiv_manager.module.aria2.entity.Aria2DownloadTaskPo;
 import com.gin.pixiv_manager.module.aria2.utils.request.Aria2Request;
 import com.gin.pixiv_manager.module.aria2.utils.response.Aria2Quest;
+import com.gin.pixiv_manager.module.pixiv.bo.TagAnalysisResult;
 import com.gin.pixiv_manager.module.pixiv.entity.PixivIllustPo;
+import com.gin.pixiv_manager.sys.utils.FileUtils;
 import com.gin.pixiv_manager.sys.utils.TimeUtils;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,9 +18,12 @@ import java.io.IOException;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static com.gin.pixiv_manager.module.pixiv.entity.PixivIllustPo.ILLUST_TYPE_GIF;
+import static com.gin.pixiv_manager.module.pixiv.entity.PixivIllustPo.*;
 
 /**
  * @author bx002
@@ -38,7 +43,7 @@ public interface Aria2DownloadTaskPoService extends IService<Aria2DownloadTaskPo
      * @param illust 作品详情
      */
     default void addPixivIllust(PixivIllustPo illust) {
-        String pixivPath = getRootPath() + "/pixiv/" + TimeUtils.DATE_FORMATTER.format(ZonedDateTime.now());
+        String pixivPath = getRootPath() + "/pixiv/待归档/" + TimeUtils.DATE_FORMATTER.format(ZonedDateTime.now());
 
         //                动图 添加一个任务
         if (ILLUST_TYPE_GIF.equals(illust.getType())) {
@@ -162,4 +167,60 @@ public interface Aria2DownloadTaskPoService extends IService<Aria2DownloadTaskPo
     List<File> getAllFiles(String prefix);
 
     void updateAllFileList() throws IOException;
+
+    /**
+     * 整理Pixiv文件
+     */
+    default void arrangePixivFiles(String dirName) {
+        final List<File> allFiles = getAllFiles("/pixiv/待归档/" + dirName);
+
+        arrangePixivFileWithPattern(allFiles, ILLUST_FILE_NAME_PATTERN);
+        arrangePixivFileWithPattern(allFiles, ILLUST_GIF_FILE_NAME_PATTERN);
+    }
+
+    /**
+     * 从列表中过滤出文件名符合正则表达式的文件，进行标签分析，并移动到指定文件夹
+     * @param allFiles 文件列表
+     * @param pattern  正则
+     */
+    private void arrangePixivFileWithPattern(List<File> allFiles, Pattern pattern) {
+        final Map<Long, List<File>> filesMap = allFiles.stream()
+                .filter(file -> pattern.matcher(file.getName()).find()).collect(Collectors.groupingBy(file -> {
+                    final Matcher matcher = pattern.matcher(file.getName());
+                    if (matcher.find()) {
+                        return Long.parseLong(matcher.group(1));
+                    }
+                    return 0L;
+                }));
+        if (filesMap.size() == 0) {
+            return;
+        }
+        filesMap.forEach((pid, files) -> {
+            final TagAnalysisResult result = getTagAnalysisResultByPid(pid);
+            final List<String> ip = result.getSortedIp();
+            if (ip.size() == 0) {
+                ip.add("原创");
+            }
+            String destDirPath = getRootPath() + FileUtils.deleteIllegalChar(String.format("/pixiv/已归档/%s/%s/"
+                    , String.join(",", ip)
+                    , String.join(",", result.getSortedChar())
+
+            ));
+            files.forEach(file -> {
+                try {
+                    FileUtils.move(file, new File(destDirPath + FileUtils.deleteIllegalChar(file.getName())));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
+
+        });
+    }
+
+    /**
+     * 根据pid 获取标签分析结果
+     * @param pid pid
+     * @return 标签分析结果
+     */
+    TagAnalysisResult getTagAnalysisResultByPid(long pid);
 }
