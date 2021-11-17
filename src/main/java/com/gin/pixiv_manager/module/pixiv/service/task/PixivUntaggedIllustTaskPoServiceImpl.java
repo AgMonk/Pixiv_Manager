@@ -91,17 +91,19 @@ public class PixivUntaggedIllustTaskPoServiceImpl extends ServiceImpl<PixivUntag
             }
             for (Future<PixivIllustPo> future : detailsTask) {
                 PixivIllustPo illust = null;
-                for (int i = 0; i < 10; i++) {
-                    try {
-                        illust = future.get(1, TimeUnit.MINUTES);
-                        break;
-                    } catch (InterruptedException | ExecutionException | TimeoutException e) {
-                        log.info("第 {} 次请求超时 继续尝试", i + 1);
-                        e.printStackTrace();
-                    }
-                }
-                if (illust == null) {
+                try {
+                    illust = future.get(1, TimeUnit.MINUTES);
+                } catch (InterruptedException | TimeoutException e) {
+                    e.printStackTrace();
                     future.cancel(true);
+                    continue;
+                } catch (ExecutionException e) {
+                    if (e.getMessage().contains("该作品已被删除")) {
+                        future.cancel(true);
+                        final String pid = e.getMessage().substring(e.getMessage().lastIndexOf(" ") + 1);
+                        log.warn(e.getMessage());
+                        removeById(pid);
+                    }
                     continue;
                 }
                 aria2DownloadTaskPoService.addPixivIllust(illust);

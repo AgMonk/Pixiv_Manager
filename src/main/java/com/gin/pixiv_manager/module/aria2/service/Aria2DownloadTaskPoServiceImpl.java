@@ -34,7 +34,7 @@ public class Aria2DownloadTaskPoServiceImpl extends ServiceImpl<Aria2DownloadTas
     @Value("${rootPath}")
     private final String rootPath;
 
-    private final ThreadPoolTaskExecutor fileExecutor = TaskExecutePool.getExecutor("file", 1);
+    private final ThreadPoolTaskExecutor fileExecutor = TaskExecutePool.getExecutor("重新录入", 1);
     private List<File> allFiles = new ArrayList<>();
 
     private final PixivIllustTagPoService pixivIllustTagPoService;

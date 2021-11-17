@@ -112,7 +112,11 @@ public class PixivRequest {
     }
 
     public static PixivResIllustDetail findIllustDetail(String cookie, Long pid) throws IOException {
-        return get(String.format(PixivApi.ILLUST_DETAIL, pid), null, cookie, PixivResIllustDetail.class);
+        final PixivResIllustDetail detail = get(String.format(PixivApi.ILLUST_DETAIL, pid), null, cookie, PixivResIllustDetail.class);
+        if (detail.getError()) {
+            throw new IOException(detail.getMessage() + "pid = " + pid);
+        }
+        return detail;
     }
 
     public static PixivResBookmarks findBookmarks(String cookie, long userId, int offset, int limit, String tag) throws IOException {

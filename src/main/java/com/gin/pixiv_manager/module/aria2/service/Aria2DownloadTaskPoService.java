@@ -168,6 +168,7 @@ public interface Aria2DownloadTaskPoService extends IService<Aria2DownloadTaskPo
 
     void updateAllFileList() throws IOException;
 
+
     /**
      * 整理Pixiv文件
      */
