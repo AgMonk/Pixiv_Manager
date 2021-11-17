@@ -16,6 +16,15 @@ public class FileUtils {
         return listAllFiles(new File(path));
     }
 
+    public static void move(File src, File dest) throws IOException {
+        assertFileExists(src);
+        assertFileNotExists(dest);
+        mkDirs(dest.getParentFile());
+        if (!src.renameTo(dest)) {
+            throw new IOException(String.format("移动失败 %s -> %s", src.getPath(), dest.getPath()));
+        }
+    }
+
     public static List<File> listAllFiles(File dir) throws IOException {
         assertFileExists(dir);
         assertFileIsDir(dir);
@@ -41,9 +50,25 @@ public class FileUtils {
         return Arrays.stream(files).collect(Collectors.toList());
     }
 
+    public static void mkDirs(File dir) throws IOException {
+        if (dir.exists() && !dir.isDirectory()) {
+            throw new IOException("该文件已存在且不是目录: " + dir.getPath());
+        }
+
+        if (!dir.exists() && !dir.mkdirs()) {
+            throw new IOException("目录创建失败: " + dir.getPath());
+        }
+    }
+
     public static void assertFileExists(File file) throws IOException {
         if (!file.exists()) {
             throw new IOException("指定文件不存在：" + file.getPath());
+        }
+    }
+
+    public static void assertFileNotExists(File file) throws IOException {
+        if (file.exists()) {
+            throw new IOException("指定文件已存在：" + file.getPath());
         }
     }
 
