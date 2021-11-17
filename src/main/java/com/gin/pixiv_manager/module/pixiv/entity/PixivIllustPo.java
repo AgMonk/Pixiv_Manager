@@ -12,9 +12,14 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.beans.BeanUtils;
 
+import java.io.File;
 import java.io.Serializable;
 import java.time.ZonedDateTime;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * 作品详情PO
@@ -93,5 +98,22 @@ public class PixivIllustPo implements Serializable {
         }
 
 
+    }
+
+    public static Map<Long, List<File>> groupFileByPid(List<File> files) {
+        return files.stream().collect(Collectors.groupingBy(file -> {
+            final String name = file.getName();
+
+            final Matcher m1 = ILLUST_FILE_NAME_PATTERN.matcher(name);
+            if (m1.find()) {
+                return Long.parseLong(m1.group(1));
+            }
+            final Matcher m2 = ILLUST_GIF_FILE_NAME_PATTERN.matcher(name);
+            if (m2.find()) {
+                return Long.parseLong(m2.group(1));
+            }
+            return 0L;
+
+        }));
     }
 }

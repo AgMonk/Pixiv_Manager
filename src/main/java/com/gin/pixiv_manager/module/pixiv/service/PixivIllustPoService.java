@@ -26,7 +26,7 @@ public interface PixivIllustPoService extends IService<PixivIllustPo> {
      * @param pid pid
      * @return 作品详情
      */
-    Future<?> findIllust(long pid);
+    Future<PixivIllustPo> findIllust(long pid);
 
     /**
      * 为作品添加表情

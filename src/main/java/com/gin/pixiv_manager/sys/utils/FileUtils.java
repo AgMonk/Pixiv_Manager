@@ -20,7 +20,7 @@ public class FileUtils {
     }
 
     public static void move(File src, String destPath) throws IOException {
-        move(src, new File(destPath + src.getName()));
+        move(src, new File(destPath + "/" + src.getName()));
     }
 
     public static void move(File src, File dest) throws IOException {

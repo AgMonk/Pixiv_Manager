@@ -4,11 +4,14 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.gin.pixiv_manager.module.aria2.dao.Aria2DownloadTaskPoDao;
 import com.gin.pixiv_manager.module.aria2.entity.Aria2DownloadTaskPo;
 import com.gin.pixiv_manager.module.pixiv.bo.TagAnalysisResult;
+import com.gin.pixiv_manager.module.pixiv.entity.PixivIllustPo;
 import com.gin.pixiv_manager.module.pixiv.entity.PixivTagPo;
+import com.gin.pixiv_manager.module.pixiv.service.PixivIllustPoService;
 import com.gin.pixiv_manager.module.pixiv.service.PixivIllustTagPoService;
 import com.gin.pixiv_manager.module.pixiv.service.PixivTagPoService;
 import com.gin.pixiv_manager.sys.config.TaskExecutePool;
 import com.gin.pixiv_manager.sys.utils.FileUtils;
+import com.gin.pixiv_manager.sys.utils.TimeUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -18,9 +21,15 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 /**
@@ -34,18 +43,20 @@ public class Aria2DownloadTaskPoServiceImpl extends ServiceImpl<Aria2DownloadTas
     @Value("${rootPath}")
     private final String rootPath;
 
-    private final ThreadPoolTaskExecutor fileExecutor = TaskExecutePool.getExecutor("重新录入", 1);
+    private final ThreadPoolTaskExecutor fileExecutor = TaskExecutePool.getExecutor("file", 1);
     private List<File> allFiles = new ArrayList<>();
 
     private final PixivIllustTagPoService pixivIllustTagPoService;
     private final PixivTagPoService pixivTagPoService;
+    private final PixivIllustPoService illustPoService;
 
     public Aria2DownloadTaskPoServiceImpl(@Value("${rootPath}") String rootPath,
                                           PixivIllustTagPoService pixivIllustTagPoService,
-                                          PixivTagPoService pixivTagPoService) throws IOException {
+                                          PixivTagPoService pixivTagPoService, PixivIllustPoService illustPoService) throws IOException {
         this.rootPath = rootPath;
         this.pixivIllustTagPoService = pixivIllustTagPoService;
         this.pixivTagPoService = pixivTagPoService;
+        this.illustPoService = illustPoService;
 
         updateAllFileList();
 //        fileExecutor.execute(()-> {
@@ -72,6 +83,50 @@ public class Aria2DownloadTaskPoServiceImpl extends ServiceImpl<Aria2DownloadTas
     @Override
     public void updateAllFileList() throws IOException {
         this.allFiles = FileUtils.listAllFiles(rootPath);
+    }
+
+    @Override
+    public void reEntryPixiv() throws IOException {
+        /*检查线程是否空闲*/
+        if (fileExecutor.getActiveCount() != 0) {
+            return;
+        }
+        /*获取目录文件*/
+        final List<File> fileList = FileUtils.listAllFiles(rootPath + "/pixiv/重新录入");
+        final Map<Long, List<File>> fileMap = PixivIllustPo.groupFileByPid(fileList);
+        fileMap.forEach((pid, files) -> {
+            /*请求数据*/
+            final Future<PixivIllustPo> future = illustPoService.findIllust(pid);
+            try {
+                final PixivIllustPo illust = future.get(1, TimeUnit.MINUTES);
+                /*拿到数据*/
+                String pixivPath = getRootPath() + "/pixiv/待归档/" + TimeUtils.DATE_FORMATTER.format(ZonedDateTime.now());
+                /*todo 检查文件是否损坏 如果损坏则重新下载*/
+
+                files.forEach(file -> {
+                    try {
+                        FileUtils.move(file, pixivPath);
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
+                });
+
+            } catch (InterruptedException | TimeoutException e) {
+                e.printStackTrace();
+            } catch (ExecutionException e) {
+                if (e.getMessage().contains("该作品已被删除")) {
+                    files.forEach(file -> {
+                        try {
+                            FileUtils.move(file, rootPath + "/pixiv/档案已删除");
+                        } catch (IOException ex) {
+                            ex.printStackTrace();
+                        }
+                    });
+                }
+            }
+
+        });
+
     }
 
     @Override
