@@ -59,7 +59,7 @@ public class Aria2DownloadTaskPoServiceImpl extends ServiceImpl<Aria2DownloadTas
         this.pixivTagPoService = pixivTagPoService;
         this.illustPoService = illustPoService;
 
-        updateAllFileList();
+
 //        fileExecutor.execute(()-> {
 //            try {
 //                updateAllFileList();
@@ -75,7 +75,10 @@ public class Aria2DownloadTaskPoServiceImpl extends ServiceImpl<Aria2DownloadTas
     }
 
     @Override
-    public List<File> getAllFiles(String prefix) {
+    public List<File> getAllFiles(String prefix) throws IOException {
+        if (allFiles.size() == 0) {
+            updateAllFileList();
+        }
         String path = (rootPath + prefix).replace("/", "\\");
         return allFiles.stream().filter(file -> file.getPath().startsWith(path)).collect(Collectors.toList());
     }
@@ -87,6 +90,7 @@ public class Aria2DownloadTaskPoServiceImpl extends ServiceImpl<Aria2DownloadTas
     }
 
     @Override
+    @Scheduled(cron = "0/30 * * * * ?")
     public void reEntryPixiv() throws IOException {
         /*检查线程是否空闲*/
         if (fileExecutor.getActiveCount() != 0) {
@@ -113,7 +117,7 @@ public class Aria2DownloadTaskPoServiceImpl extends ServiceImpl<Aria2DownloadTas
                 String pixivPath = rootPath + "/pixiv/待归档/" + TimeUtils.DATE_FORMATTER.format(ZonedDateTime.now());
                 files.forEach(file -> {
                     try {
-                        FileUtils.move(file, pixivPath);
+                        FileUtils.move(file, new File(pixivPath + "/" + PixivIllustPo.parseOriginalName(file.getName())));
                     } catch (IOException ex) {
                         ex.printStackTrace();
                     }
@@ -123,13 +127,11 @@ public class Aria2DownloadTaskPoServiceImpl extends ServiceImpl<Aria2DownloadTas
                 e.printStackTrace();
             } catch (ExecutionException e) {
                 if (e.getMessage().contains("该作品已被删除")) {
-                    files.forEach(file -> {
-                        try {
-                            FileUtils.move(file, rootPath + "/pixiv/档案已删除");
-                        } catch (IOException ex) {
-                            ex.printStackTrace();
-                        }
-                    });
+                    try {
+                        FileUtils.move(files, rootPath + "/pixiv/档案已删除");
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
                 }
             }
 

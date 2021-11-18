@@ -162,7 +162,7 @@ public interface Aria2DownloadTaskPoService extends IService<Aria2DownloadTaskPo
         return list(qw).stream().map(Aria2DownloadTaskPo::getGid).collect(Collectors.toList());
     }
 
-    List<File> getAllFiles(String prefix);
+    List<File> getAllFiles(String prefix) throws IOException;
 
     void updateAllFileList() throws IOException;
 
@@ -175,7 +175,7 @@ public interface Aria2DownloadTaskPoService extends IService<Aria2DownloadTaskPo
     /**
      * 整理Pixiv文件
      */
-    default void arrangePixivFiles(String dirName) {
+    default void arrangePixivFiles(String dirName) throws IOException {
         final List<File> allFiles = getAllFiles("/pixiv/待归档/" + dirName);
 
         final Map<Long, List<File>> filesMap = PixivIllustPo.groupFileByPid(allFiles);
