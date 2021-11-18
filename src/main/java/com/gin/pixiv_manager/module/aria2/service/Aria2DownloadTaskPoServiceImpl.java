@@ -11,6 +11,7 @@ import com.gin.pixiv_manager.module.pixiv.service.PixivIllustTagPoService;
 import com.gin.pixiv_manager.module.pixiv.service.PixivTagPoService;
 import com.gin.pixiv_manager.sys.config.TaskExecutePool;
 import com.gin.pixiv_manager.sys.utils.FileUtils;
+import com.gin.pixiv_manager.sys.utils.ImageUtils;
 import com.gin.pixiv_manager.sys.utils.TimeUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -94,15 +95,22 @@ public class Aria2DownloadTaskPoServiceImpl extends ServiceImpl<Aria2DownloadTas
         /*获取目录文件*/
         final List<File> fileList = FileUtils.listAllFiles(rootPath + "/pixiv/重新录入");
         final Map<Long, List<File>> fileMap = PixivIllustPo.groupFileByPid(fileList);
-        fileMap.forEach((pid, files) -> {
+        fileExecutor.execute(() -> fileMap.forEach((pid, files) -> {
+            /*检查文件是否损坏 如果损坏则移动到指定文件夹*/
+            if (files.stream().anyMatch(file1 -> !ImageUtils.verifyImage(file1))) {
+                try {
+                    FileUtils.move(files, rootPath + "/pixiv/损坏文件");
+                    return;
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
             /*请求数据*/
-            final Future<PixivIllustPo> future = illustPoService.findIllust(pid);
             try {
+                final Future<PixivIllustPo> future = illustPoService.findIllust(pid);
                 final PixivIllustPo illust = future.get(1, TimeUnit.MINUTES);
                 /*拿到数据*/
-                String pixivPath = getRootPath() + "/pixiv/待归档/" + TimeUtils.DATE_FORMATTER.format(ZonedDateTime.now());
-                /*todo 检查文件是否损坏 如果损坏则重新下载*/
-
+                String pixivPath = rootPath + "/pixiv/待归档/" + TimeUtils.DATE_FORMATTER.format(ZonedDateTime.now());
                 files.forEach(file -> {
                     try {
                         FileUtils.move(file, pixivPath);
@@ -125,8 +133,7 @@ public class Aria2DownloadTaskPoServiceImpl extends ServiceImpl<Aria2DownloadTas
                 }
             }
 
-        });
-
+        }));
     }
 
     @Override

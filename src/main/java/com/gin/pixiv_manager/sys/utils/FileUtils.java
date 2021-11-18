@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,6 +22,12 @@ public class FileUtils {
 
     public static void move(File src, String destPath) throws IOException {
         move(src, new File(destPath + "/" + src.getName()));
+    }
+
+    public static void move(Collection<File> files, String destPath) throws IOException {
+        for (File file : files) {
+            move(file, new File(destPath + "/" + file.getName()));
+        }
     }
 
     public static void move(File src, File dest) throws IOException {
