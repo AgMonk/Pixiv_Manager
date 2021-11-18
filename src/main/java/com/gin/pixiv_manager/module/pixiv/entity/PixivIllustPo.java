@@ -116,4 +116,17 @@ public class PixivIllustPo implements Serializable {
 
         }));
     }
+
+    public static String parseOriginalName(String filename) {
+        final Matcher m1 = ILLUST_FILE_NAME_PATTERN.matcher(filename);
+        if (m1.find()) {
+            final String suffix = filename.substring(filename.lastIndexOf("."));
+            return m1.group(1) + "_p" + m1.group(2) + suffix;
+        }
+        final Matcher m2 = ILLUST_GIF_FILE_NAME_PATTERN.matcher(filename);
+        if (m2.find()) {
+            return m2.group(1) + "_ugoira1920x1080.zip";
+        }
+        return filename;
+    }
 }
