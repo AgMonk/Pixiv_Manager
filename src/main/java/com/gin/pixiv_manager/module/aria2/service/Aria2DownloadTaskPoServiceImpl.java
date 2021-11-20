@@ -101,7 +101,7 @@ public class Aria2DownloadTaskPoServiceImpl extends ServiceImpl<Aria2DownloadTas
         final Map<Long, List<File>> fileMap = PixivIllustPo.groupFileByPid(fileList);
         fileExecutor.execute(() -> fileMap.forEach((pid, files) -> {
             /*检查文件是否损坏 如果损坏则移动到指定文件夹*/
-            if (files.stream().anyMatch(file1 -> !ImageUtils.verifyImage(file1))) {
+            if (files.stream().anyMatch(f -> !f.getName().endsWith("zip") && !ImageUtils.verifyImage(f))) {
                 try {
                     FileUtils.move(files, rootPath + "/pixiv/损坏文件");
                     return;
@@ -111,7 +111,7 @@ public class Aria2DownloadTaskPoServiceImpl extends ServiceImpl<Aria2DownloadTas
             }
             /*请求数据*/
             try {
-                final Future<PixivIllustPo> future = illustPoService.findIllust(pid);
+                final Future<PixivIllustPo> future = illustPoService.findIllust(pid, ZonedDateTime.now().minusDays(1).toEpochSecond());
                 final PixivIllustPo illust = future.get(1, TimeUnit.MINUTES);
                 /*拿到数据*/
                 String pixivPath = rootPath + "/pixiv/待归档/" + TimeUtils.DATE_FORMATTER.format(ZonedDateTime.now());

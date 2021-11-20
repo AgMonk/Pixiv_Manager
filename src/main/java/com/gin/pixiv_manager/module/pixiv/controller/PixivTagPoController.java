@@ -35,6 +35,8 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 
+import static com.gin.pixiv_manager.module.pixiv.entity.PixivTagPo.TYPE_BMK_COUNT;
+
 /**
  * PixivTag管理接口
  * @author bx002
@@ -85,6 +87,9 @@ public class PixivTagPoController {
             filter.handleQueryWrapper(qw);
         }
 
+        /*todo 暂时屏蔽收藏数tag */
+        qw.ne("type", TYPE_BMK_COUNT);
+
         Page<PixivTagPo> page = service.page(new Page<>(params.getPage(), params.getSize()), qw);
 //      后续处理
         List<PixivTagPo> records = page.getRecords();
@@ -98,7 +103,6 @@ public class PixivTagPoController {
         }
 
 //        补充图片地址
-        log.info("补充图片地址 start");
 //        持有每个tag的作品pid
         final Map<String, List<PixivIllustTagPo>> tag2PidMap =
                 pixivIllustTagPoService.listPidByTag(records.stream().map(PixivTagPo::getTag).collect(Collectors.toList()))
@@ -141,9 +145,6 @@ public class PixivTagPoController {
             tagExamplesCache.put(tag.getTag(), pathList);
             tag.setExamples(pathList);
         }
-        log.info("补充图片地址 end");
-
-
         return Res.success("查询" + NAMESPACE + "分页数据成功", page);
     }
 
