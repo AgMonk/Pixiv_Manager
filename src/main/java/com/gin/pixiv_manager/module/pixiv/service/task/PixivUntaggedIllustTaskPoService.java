@@ -15,6 +15,8 @@ import java.util.stream.Collectors;
 @Transactional(rollbackFor = Exception.class)
 public interface PixivUntaggedIllustTaskPoService extends IService<PixivUntaggedIllustTaskPo> {
 
+    Integer getUntaggedTotal();
+
     /**
      * 请求收藏夹
      */

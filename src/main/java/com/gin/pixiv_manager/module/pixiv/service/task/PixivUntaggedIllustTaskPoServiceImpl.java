@@ -46,6 +46,13 @@ public class PixivUntaggedIllustTaskPoServiceImpl extends ServiceImpl<PixivUntag
     public static final int MAX_ACTIVE_TASKS = 5;
     private final List<Long> activeTasks = new ArrayList<>();
 
+    private Integer untaggedTotal = 0;
+
+    @Override
+    public Integer getUntaggedTotal() {
+        return untaggedTotal;
+    }
+
     @Override
     @Scheduled(cron = "0 0/5 * * * ?")
     public void findBookmarks() throws IOException {
@@ -63,9 +70,11 @@ public class PixivUntaggedIllustTaskPoServiceImpl extends ServiceImpl<PixivUntag
             return;
         }
         log.info("未分类作品剩余 {} 个", total);
+        this.untaggedTotal = total;
         final List<PixivSearchIllust> data = body.getData().stream().filter(i -> {
             if (i.getUserId() == 0) {
                 log.warn("作品已经被删除 移除收藏 pid = " + i.getId());
+                this.untaggedTotal--;
                 bookmarkExecutor.execute(() -> {
                     try {
                         PixivRequest.bookmarksDelete(pixivCookie.getCookie(), pixivCookie.getToken(), i.getBookmarkData().getId());
@@ -105,9 +114,10 @@ public class PixivUntaggedIllustTaskPoServiceImpl extends ServiceImpl<PixivUntag
                 detailsTask.add(illustPoService.findIllust(pid, time));
             }
             for (Future<PixivIllustPo> future : detailsTask) {
-                PixivIllustPo illust = null;
+                PixivIllustPo illust;
                 try {
                     illust = future.get(1, TimeUnit.MINUTES);
+                    this.untaggedTotal--;
                 } catch (InterruptedException | TimeoutException e) {
                     e.printStackTrace();
                     future.cancel(true);
@@ -118,6 +128,7 @@ public class PixivUntaggedIllustTaskPoServiceImpl extends ServiceImpl<PixivUntag
                         final String pid = e.getMessage().substring(e.getMessage().lastIndexOf(" ") + 1);
                         log.warn(e.getMessage());
                         removeById(pid);
+                        this.untaggedTotal--;
                     }
                     continue;
                 }
