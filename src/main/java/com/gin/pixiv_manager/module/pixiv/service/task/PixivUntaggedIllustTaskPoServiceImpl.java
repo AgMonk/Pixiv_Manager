@@ -23,7 +23,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.IOException;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -108,12 +110,12 @@ public class PixivUntaggedIllustTaskPoServiceImpl extends ServiceImpl<PixivUntag
         }
         final long time = ZonedDateTime.now().minusHours(1).toEpochSecond();
         bookmarkExecutor.execute(() -> {
-            List<Future<PixivIllustPo>> detailsTask = new ArrayList<>();
+            Map<Long, Future<PixivIllustPo>> taskMap = new HashMap<>();
             for (Long pid : pidList) {
                 activeTasks.add(pid);
-                detailsTask.add(illustPoService.findIllust(pid, time));
+                taskMap.put(pid, illustPoService.findIllust(pid, time));
             }
-            for (Future<PixivIllustPo> future : detailsTask) {
+            taskMap.forEach((pid, future) -> {
                 PixivIllustPo illust;
                 try {
                     illust = future.get(1, TimeUnit.MINUTES);
@@ -121,19 +123,18 @@ public class PixivUntaggedIllustTaskPoServiceImpl extends ServiceImpl<PixivUntag
                 } catch (InterruptedException | TimeoutException e) {
                     e.printStackTrace();
                     future.cancel(true);
-                    continue;
+                    return;
                 } catch (ExecutionException e) {
                     if (e.getMessage().contains("该作品已被删除")) {
                         future.cancel(true);
-                        final String pid = e.getMessage().substring(e.getMessage().lastIndexOf(" ") + 1);
                         log.warn(e.getMessage());
                         removeById(pid);
+                        activeTasks.remove(pid);
                         this.untaggedTotal--;
                     }
-                    continue;
+                    return;
                 }
                 aria2DownloadTaskPoService.addPixivIllust(illust);
-                final Long pid = illust.getId();
                 removeById(pid);
                 activeTasks.remove(pid);
                 try {
@@ -141,7 +142,7 @@ public class PixivUntaggedIllustTaskPoServiceImpl extends ServiceImpl<PixivUntag
                 } catch (InterruptedException | ExecutionException | TimeoutException e) {
                     e.printStackTrace();
                 }
-            }
+            });
         });
 
     }
