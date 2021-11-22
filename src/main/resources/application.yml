@@ -11,8 +11,10 @@ druid:
   mysql:
     usePingMethod: false
 
-rootPath: h:/illust
 
+aria2:
+  rootPath: h:/illust
+  maxTasks: 10
 
 server:
   port: 9090
@@ -46,7 +48,7 @@ spring:
       cache:
         cachecontrol:
           max-age: 60s
-      static-locations: classpath:/META-INF/resources/,classpath:/resources/,classpath:/static/,classpath:/public/,file:${rootPath}
+      static-locations: classpath:/META-INF/resources/,classpath:/resources/,classpath:/static/,classpath:/public/,file:${aria2.rootPath}
 
 # actable的配置信息
 actable:

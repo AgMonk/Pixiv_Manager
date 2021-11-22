@@ -1,6 +1,7 @@
 package com.gin.pixiv_manager.module.aria2.service;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.gin.pixiv_manager.module.aria2.config.Aria2Config;
 import com.gin.pixiv_manager.module.aria2.dao.Aria2DownloadTaskPoDao;
 import com.gin.pixiv_manager.module.aria2.entity.Aria2DownloadTaskPo;
 import com.gin.pixiv_manager.module.pixiv.bo.TagAnalysisResult;
@@ -13,8 +14,8 @@ import com.gin.pixiv_manager.sys.config.TaskExecutePool;
 import com.gin.pixiv_manager.sys.utils.FileUtils;
 import com.gin.pixiv_manager.sys.utils.ImageUtils;
 import com.gin.pixiv_manager.sys.utils.TimeUtils;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
@@ -39,39 +40,29 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 @Transactional(rollbackFor = Exception.class)
-//@RequiredArgsConstructor
+@RequiredArgsConstructor
 public class Aria2DownloadTaskPoServiceImpl extends ServiceImpl<Aria2DownloadTaskPoDao, Aria2DownloadTaskPo> implements Aria2DownloadTaskPoService {
-    @Value("${rootPath}")
-    private final String rootPath;
-
     private final ThreadPoolTaskExecutor fileExecutor = TaskExecutePool.getExecutor("file", 1);
     private List<File> allFiles = new ArrayList<>();
 
     private final PixivIllustTagPoService pixivIllustTagPoService;
     private final PixivTagPoService pixivTagPoService;
     private final PixivIllustPoService illustPoService;
+    private final Aria2Config aria2Config;
 
-    public Aria2DownloadTaskPoServiceImpl(@Value("${rootPath}") String rootPath,
-                                          PixivIllustTagPoService pixivIllustTagPoService,
-                                          PixivTagPoService pixivTagPoService, PixivIllustPoService illustPoService) throws IOException {
-        this.rootPath = rootPath;
-        this.pixivIllustTagPoService = pixivIllustTagPoService;
-        this.pixivTagPoService = pixivTagPoService;
-        this.illustPoService = illustPoService;
-
-
-//        fileExecutor.execute(()-> {
+//    public Aria2DownloadTaskPoServiceImpl() throws IOException {
+//        fileExecutor.execute(() -> {
 //            try {
 //                updateAllFileList();
 //            } catch (IOException e) {
 //                e.printStackTrace();
 //            }
 //        });
-    }
+//    }
 
     @Override
-    public String getRootPath() {
-        return rootPath;
+    public Aria2Config getConfig() {
+        return aria2Config;
     }
 
     @Override
@@ -79,14 +70,18 @@ public class Aria2DownloadTaskPoServiceImpl extends ServiceImpl<Aria2DownloadTas
         if (allFiles.size() == 0) {
             updateAllFileList();
         }
-        String path = (rootPath + prefix).replace("/", "\\");
+        String path = (getRootPath() + prefix).replace("/", "\\");
         return allFiles.stream().filter(file -> file.getPath().startsWith(path)).collect(Collectors.toList());
     }
 
     @Scheduled(cron = "0 0/5 * * * ?")
     @Override
     public void updateAllFileList() throws IOException {
-        this.allFiles = FileUtils.listAllFiles(rootPath);
+        this.allFiles = FileUtils.listAllFiles(getRootPath());
+    }
+
+    private String getRootPath() {
+        return getConfig().getRootPath();
     }
 
     @Override
@@ -97,13 +92,13 @@ public class Aria2DownloadTaskPoServiceImpl extends ServiceImpl<Aria2DownloadTas
             return;
         }
         /*获取目录文件*/
-        final List<File> fileList = FileUtils.listAllFiles(rootPath + "/pixiv/重新录入");
+        final List<File> fileList = FileUtils.listAllFiles(getRootPath() + "/pixiv/重新录入");
         final Map<Long, List<File>> fileMap = PixivIllustPo.groupFileByPid(fileList);
         fileExecutor.execute(() -> fileMap.forEach((pid, files) -> {
             /*检查文件是否损坏 如果损坏则移动到指定文件夹*/
             if (files.stream().anyMatch(f -> !f.getName().endsWith("zip") && !ImageUtils.verifyImage(f))) {
                 try {
-                    FileUtils.move(files, rootPath + "/pixiv/损坏文件");
+                    FileUtils.move(files, getRootPath() + "/pixiv/损坏文件");
                     return;
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -114,7 +109,7 @@ public class Aria2DownloadTaskPoServiceImpl extends ServiceImpl<Aria2DownloadTas
                 final Future<PixivIllustPo> future = illustPoService.findIllust(pid, ZonedDateTime.now().minusDays(1).toEpochSecond());
                 final PixivIllustPo illust = future.get(1, TimeUnit.MINUTES);
                 /*拿到数据*/
-                String pixivPath = rootPath + "/pixiv/待归档/" + TimeUtils.DATE_FORMATTER.format(ZonedDateTime.now());
+                String pixivPath = getRootPath() + "/pixiv/待归档/" + TimeUtils.DATE_FORMATTER.format(ZonedDateTime.now());
                 files.forEach(file -> {
                     try {
                         FileUtils.move(file, new File(pixivPath + "/" + PixivIllustPo.parseOriginalName(file.getName())));
@@ -128,7 +123,7 @@ public class Aria2DownloadTaskPoServiceImpl extends ServiceImpl<Aria2DownloadTas
             } catch (ExecutionException e) {
                 if (e.getMessage().contains("该作品已被删除")) {
                     try {
-                        FileUtils.move(files, rootPath + "/pixiv/档案已删除");
+                        FileUtils.move(files, getRootPath() + "/pixiv/档案已删除");
                     } catch (IOException ex) {
                         ex.printStackTrace();
                     }

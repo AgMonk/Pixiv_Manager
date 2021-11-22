@@ -3,6 +3,7 @@ package com.gin.pixiv_manager.module.aria2.service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.gin.pixiv_manager.module.aria2.config.Aria2Config;
 import com.gin.pixiv_manager.module.aria2.entity.Aria2DownloadTaskPo;
 import com.gin.pixiv_manager.module.aria2.utils.request.Aria2Request;
 import com.gin.pixiv_manager.module.aria2.utils.response.Aria2Quest;
@@ -34,14 +35,18 @@ public interface Aria2DownloadTaskPoService extends IService<Aria2DownloadTaskPo
     String PIXIV_RE_DOMAIN_2 = "i.pixiv.re";
     int MAX_TASKS = 10;
 
-    String getRootPath();
+    /**
+     * aria2配置
+     * @return aria2配置
+     */
+    Aria2Config getConfig();
 
     /**
      * 下载一个Pixiv作品
      * @param illust 作品详情
      */
     default void addPixivIllust(PixivIllustPo illust) {
-        String pixivPath = getRootPath() + "/pixiv/待归档/" + TimeUtils.DATE_FORMATTER.format(ZonedDateTime.now());
+        String pixivPath = getConfig().getRootPath() + "/pixiv/待归档/" + TimeUtils.DATE_FORMATTER.format(ZonedDateTime.now());
 
         //                动图 添加一个任务
         if (ILLUST_TYPE_GIF.equals(illust.getType())) {
@@ -188,7 +193,7 @@ public interface Aria2DownloadTaskPoService extends IService<Aria2DownloadTaskPo
             if (ip.size() == 0) {
                 ip.add("原创");
             }
-            String destDirPath = getRootPath() + FileUtils.deleteIllegalChar(String.format("/pixiv/已归档/%s/%s/"
+            String destDirPath = getConfig().getRootPath() + FileUtils.deleteIllegalChar(String.format("/pixiv/已归档/%s/%s/"
                     , String.join(",", ip)
                     , String.join(",", result.getSortedChar())
 
