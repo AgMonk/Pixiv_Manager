@@ -1,5 +1,6 @@
 package com.gin.pixiv_manager.module.files.service;
 
+import com.gin.pixiv_manager.module.pixiv.entity.PixivIllustPo;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
@@ -22,4 +23,9 @@ public interface PixivFilesService {
      */
     void arrangeFiles(String dirName) throws IOException;
 
+    /**
+     * 下载一个Pixiv作品
+     * @param illust 作品详情
+     */
+    void downloadFile(PixivIllustPo illust);
 }

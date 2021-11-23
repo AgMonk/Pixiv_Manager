@@ -2,6 +2,7 @@ package com.gin.pixiv_manager;
 
 import com.gin.pixiv_manager.module.aria2.service.Aria2DownloadTaskPoService;
 import com.gin.pixiv_manager.module.pixiv.service.*;
+import com.gin.pixiv_manager.sys.utils.JsonUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +28,8 @@ class PixivManagerApplicationTests {
     PixivTagPoService pixivTagPoService;
     @Autowired
     PixivTagTypePoService pixivTagTypePoService;
-
+    @Autowired
+    FilesConfig filesConfig;
 
     @Test
     void contextLoads() throws IOException, ExecutionException, InterruptedException, TimeoutException {

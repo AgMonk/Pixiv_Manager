@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 
 /**
- * 对tag类型进行分类
+ * 对tags列表进行分析、分类
  * @author bx002
  */
 @Data

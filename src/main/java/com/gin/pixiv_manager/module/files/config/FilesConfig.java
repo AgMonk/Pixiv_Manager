@@ -1,5 +1,7 @@
 package com.gin.pixiv_manager.module.files.config;
 
+import com.gin.pixiv_manager.module.files.config.child.Aria2Config;
+import com.gin.pixiv_manager.module.files.config.child.PixivConfig;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -10,10 +12,13 @@ import org.springframework.stereotype.Component;
  * @author bx002
  */
 @Component
-@ConfigurationProperties(prefix = "aria2")
+@ConfigurationProperties(prefix = "files")
 @Getter
 @Setter
-public class Aria2Config {
+public class FilesConfig {
     String rootPath;
-    Integer maxTasks;
+
+    PixivConfig pixiv;
+
+    Aria2Config aira2;
 }

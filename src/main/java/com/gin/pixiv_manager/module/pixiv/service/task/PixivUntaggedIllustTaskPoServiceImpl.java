@@ -1,7 +1,7 @@
 package com.gin.pixiv_manager.module.pixiv.service.task;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.gin.pixiv_manager.module.files.service.Aria2DownloadTaskPoService;
+import com.gin.pixiv_manager.module.files.service.PixivFilesService;
 import com.gin.pixiv_manager.module.pixiv.dao.PixivUntaggedIllustTaskPoDao;
 import com.gin.pixiv_manager.module.pixiv.entity.PixivCookie;
 import com.gin.pixiv_manager.module.pixiv.entity.PixivIllustPo;
@@ -43,7 +43,7 @@ public class PixivUntaggedIllustTaskPoServiceImpl extends ServiceImpl<PixivUntag
     private final PixivCookieService pixivCookieService;
     private final ThreadPoolTaskExecutor bookmarkExecutor;
     private final PixivIllustPoService illustPoService;
-    private final Aria2DownloadTaskPoService aria2DownloadTaskPoService;
+    private final PixivFilesService pixivFilesService;
 
     public static final int MAX_ACTIVE_TASKS = 5;
     private final List<Long> activeTasks = new ArrayList<>();
@@ -134,7 +134,7 @@ public class PixivUntaggedIllustTaskPoServiceImpl extends ServiceImpl<PixivUntag
                     }
                     return;
                 }
-                aria2DownloadTaskPoService.addPixivIllust(illust);
+                pixivFilesService.downloadFile(illust);
                 removeById(pid);
                 activeTasks.remove(pid);
                 try {

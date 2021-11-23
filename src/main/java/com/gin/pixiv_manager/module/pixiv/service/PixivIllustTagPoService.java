@@ -2,6 +2,7 @@ package com.gin.pixiv_manager.module.pixiv.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.gin.pixiv_manager.module.pixiv.bo.TagAnalysisResult;
 import com.gin.pixiv_manager.module.pixiv.entity.PixivIllustTagPo;
 import com.gin.pixiv_manager.sys.utils.StringUtils;
 import org.springframework.transaction.annotation.Transactional;
@@ -58,4 +59,10 @@ public interface PixivIllustTagPoService extends IService<PixivIllustTagPo> {
         return list(qw);
     }
 
+    /**
+     * 根据pid 获取标签分析结果
+     * @param pid pid
+     * @return 标签分析结果
+     */
+    TagAnalysisResult getTagAnalysisResultByPid(long pid);
 }

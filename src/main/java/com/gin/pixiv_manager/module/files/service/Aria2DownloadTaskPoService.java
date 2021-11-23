@@ -3,24 +3,18 @@ package com.gin.pixiv_manager.module.files.service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.gin.pixiv_manager.module.files.config.Aria2Config;
+import com.gin.pixiv_manager.module.files.config.FilesConfig;
 import com.gin.pixiv_manager.module.files.entity.Aria2DownloadTaskPo;
 import com.gin.pixiv_manager.module.files.utils.request.Aria2Request;
 import com.gin.pixiv_manager.module.files.utils.response.Aria2Quest;
-import com.gin.pixiv_manager.module.pixiv.bo.TagAnalysisResult;
-import com.gin.pixiv_manager.module.pixiv.entity.PixivIllustPo;
-import com.gin.pixiv_manager.sys.utils.TimeUtils;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
 import java.io.IOException;
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import static com.gin.pixiv_manager.module.pixiv.entity.PixivIllustPo.ILLUST_TYPE_GIF;
 
 /**
  * @author bx002
@@ -29,72 +23,11 @@ import static com.gin.pixiv_manager.module.pixiv.entity.PixivIllustPo.ILLUST_TYP
 public interface Aria2DownloadTaskPoService extends IService<Aria2DownloadTaskPo> {
     org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(Aria2DownloadTaskPoService.class);
 
-    String PIXIV_RE_DOMAIN = "https://pixiv.re/";
-    String PIXIV_RE_DOMAIN_2 = "i.pixiv.re";
-    int MAX_TASKS = 10;
-
     /**
      * aria2配置
      * @return aria2配置
      */
-    Aria2Config getConfig();
-
-    /**
-     * 下载一个Pixiv作品
-     * @param illust 作品详情
-     */
-    default void addPixivIllust(PixivIllustPo illust) {
-        String pixivPath = getConfig().getRootPath() + "/pixiv/待归档/" + TimeUtils.DATE_FORMATTER.format(ZonedDateTime.now());
-
-        //                动图 添加一个任务
-        if (ILLUST_TYPE_GIF.equals(illust.getType())) {
-            String uuid = illust.getId() + "_u0";
-            if (getById(uuid) != null) {
-                LOG.warn("已经有相同任务 pid = {}", illust.getId());
-                return;
-            }
-            final String oUrl = illust.getOriginalUrl();
-            final String rUrl2 = oUrl.replace("i.pximg.net", PIXIV_RE_DOMAIN_2);
-            String filename = oUrl.substring(oUrl.lastIndexOf("/") + 1);
-            Aria2DownloadTaskPo task = new Aria2DownloadTaskPo();
-            task.setDir(pixivPath);
-            task.setFileName(filename);
-            task.setUrls(List.of(oUrl, rUrl2));
-            task.setUuid(uuid);
-            task.setType("pixiv-gif");
-            task.setPriority(2);
-            task.setTimestamp(ZonedDateTime.now().toEpochSecond());
-            save(task);
-            LOG.info("添加 1 个 动图任务 {}", illust.getId());
-        } else {
-            //                其他 可能添加多个任务
-            List<Aria2DownloadTaskPo> taskList = new ArrayList<>();
-            for (int i = 0; i < illust.getPageCount(); i++) {
-                final String uuid = illust.getId() + "_p" + i;
-                if (getById(uuid) != null) {
-                    LOG.warn("已经有相同任务 pid = {}", illust.getId());
-                    return;
-                }
-                final String oUrl = illust.getOriginalUrl().replace("_p0", "_p" + i);
-                final String suffix = oUrl.substring(oUrl.lastIndexOf('.'));
-                final String rUrl = PIXIV_RE_DOMAIN + illust.getId() + (i > 0 ? ("-" + i) : "") + suffix;
-                final String rUrl2 = oUrl.replace("i.pximg.net", PIXIV_RE_DOMAIN_2);
-                final String filename = oUrl.substring(oUrl.lastIndexOf("/") + 1);
-
-                Aria2DownloadTaskPo task = new Aria2DownloadTaskPo();
-                task.setDir(pixivPath);
-                task.setFileName(filename);
-                task.setUrls(List.of(oUrl, rUrl, rUrl2));
-                task.setUuid(uuid);
-                task.setType("pixiv-插画/漫画");
-                task.setPriority(1);
-                task.setTimestamp(ZonedDateTime.now().toEpochSecond());
-                taskList.add(task);
-            }
-            LOG.info("添加 {} 个 插画/漫画任务 {}", taskList.size(), illust.getId());
-            saveBatch(taskList);
-        }
-    }
+    FilesConfig getConfig();
 
     /**
      * 移除已完成的任务
@@ -134,7 +67,7 @@ public interface Aria2DownloadTaskPoService extends IService<Aria2DownloadTaskPo
             update(uw);
         }
 
-        int count = MAX_TASKS - activeQuest.size() - waitingQuest.size();
+        int count = getConfig().getAira2().getMaxTasks() - activeQuest.size() - waitingQuest.size();
 
         if (count <= 0) {
 //        队列数量较多 不添加新任务
@@ -179,10 +112,5 @@ public interface Aria2DownloadTaskPoService extends IService<Aria2DownloadTaskPo
      */
     void updateAllFileList() throws IOException;
 
-    /**
-     * 根据pid 获取标签分析结果
-     * @param pid pid
-     * @return 标签分析结果
-     */
-    TagAnalysisResult getTagAnalysisResultByPid(long pid);
+
 }

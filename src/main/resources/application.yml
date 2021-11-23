@@ -12,9 +12,17 @@ druid:
     usePingMethod: false
 
 
-aria2:
+files:
   rootPath: h:/illust
-  maxTasks: 10
+  aira2:
+    maxTasks: 10
+  pixiv:
+    rootPath: pixiv
+    untaggedDir: 待归档
+    taggedDir: 已归档
+    reEntryDir: 重新录入
+    errorDir: 损坏文件
+    deletedDir: 档案已删除
 
 server:
   port: 9090
