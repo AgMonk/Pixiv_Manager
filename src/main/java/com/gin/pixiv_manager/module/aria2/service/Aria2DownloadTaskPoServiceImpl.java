@@ -68,7 +68,14 @@ public class Aria2DownloadTaskPoServiceImpl extends ServiceImpl<Aria2DownloadTas
     @Override
     public List<File> getAllFiles(String prefix) throws IOException {
         if (allFiles.size() == 0) {
-            updateAllFileList();
+            fileExecutor.execute(() -> {
+                try {
+                    updateAllFileList();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
+            return new ArrayList<>();
         }
         String path = (getRootPath() + prefix).replace("/", "\\");
         return allFiles.stream().filter(file -> file.getPath().startsWith(path)).collect(Collectors.toList());

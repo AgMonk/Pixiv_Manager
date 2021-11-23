@@ -12,6 +12,7 @@ import java.io.Serializable;
 public class PixivBookmarksAdd implements Serializable {
     @JSONField(alternateNames = "last_bookmark_id")
     Long lastBookmarkId;
+    @SuppressWarnings("SpellCheckingInspection")
     @JSONField(alternateNames = "stacc_status_id")
     Long staccStatusId;
 }
