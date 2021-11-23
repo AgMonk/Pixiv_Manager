@@ -1,10 +1,10 @@
-package com.gin.pixiv_manager.module.aria2.entity;
+package com.gin.pixiv_manager.module.files.entity;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.gin.pixiv_manager.module.aria2.utils.request.Aria2Request;
-import com.gin.pixiv_manager.module.aria2.utils.request.Aria2UriOption;
+import com.gin.pixiv_manager.module.files.utils.request.Aria2Request;
+import com.gin.pixiv_manager.module.files.utils.request.Aria2UriOption;
 import com.gin.pixiv_manager.sys.type_handler.ListStringTypeHandler;
 import com.gitee.sunchenbin.mybatis.actable.annotation.Column;
 import com.gitee.sunchenbin.mybatis.actable.annotation.IsKey;

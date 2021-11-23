@@ -1,6 +1,6 @@
-package com.gin.pixiv_manager.module.aria2.utils.method;
+package com.gin.pixiv_manager.module.files.utils.method;
 
-import com.gin.pixiv_manager.module.aria2.utils.request.Aria2RequestParam;
+import com.gin.pixiv_manager.module.files.utils.request.Aria2RequestParam;
 
 import java.io.Serializable;
 

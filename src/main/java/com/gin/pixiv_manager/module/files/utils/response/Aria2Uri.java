@@ -1,4 +1,4 @@
-package com.gin.pixiv_manager.module.aria2.utils.response;
+package com.gin.pixiv_manager.module.files.utils.response;
 
 import lombok.Data;
 

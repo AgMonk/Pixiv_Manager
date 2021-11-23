@@ -1,8 +1,8 @@
-package com.gin.pixiv_manager.module.aria2.utils.request;
+package com.gin.pixiv_manager.module.files.utils.request;
 
 import com.alibaba.fastjson.annotation.JSONField;
-import com.gin.pixiv_manager.module.aria2.utils.method.Aria2Method;
-import com.gin.pixiv_manager.module.aria2.utils.method.Aria2MethodSerializer;
+import com.gin.pixiv_manager.module.files.utils.method.Aria2Method;
+import com.gin.pixiv_manager.module.files.utils.method.Aria2MethodSerializer;
 import lombok.Data;
 
 import java.io.Serializable;

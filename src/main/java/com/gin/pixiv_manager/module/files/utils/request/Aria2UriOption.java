@@ -1,4 +1,4 @@
-package com.gin.pixiv_manager.module.aria2.utils.request;
+package com.gin.pixiv_manager.module.files.utils.request;
 
 import com.alibaba.fastjson.annotation.JSONField;
 import lombok.Data;

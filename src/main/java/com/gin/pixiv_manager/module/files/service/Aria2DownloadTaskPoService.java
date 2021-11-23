@@ -1,15 +1,14 @@
-package com.gin.pixiv_manager.module.aria2.service;
+package com.gin.pixiv_manager.module.files.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.gin.pixiv_manager.module.aria2.config.Aria2Config;
-import com.gin.pixiv_manager.module.aria2.entity.Aria2DownloadTaskPo;
-import com.gin.pixiv_manager.module.aria2.utils.request.Aria2Request;
-import com.gin.pixiv_manager.module.aria2.utils.response.Aria2Quest;
+import com.gin.pixiv_manager.module.files.config.Aria2Config;
+import com.gin.pixiv_manager.module.files.entity.Aria2DownloadTaskPo;
+import com.gin.pixiv_manager.module.files.utils.request.Aria2Request;
+import com.gin.pixiv_manager.module.files.utils.response.Aria2Quest;
 import com.gin.pixiv_manager.module.pixiv.bo.TagAnalysisResult;
 import com.gin.pixiv_manager.module.pixiv.entity.PixivIllustPo;
-import com.gin.pixiv_manager.sys.utils.FileUtils;
 import com.gin.pixiv_manager.sys.utils.TimeUtils;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,7 +18,6 @@ import java.io.IOException;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import static com.gin.pixiv_manager.module.pixiv.entity.PixivIllustPo.ILLUST_TYPE_GIF;
@@ -167,47 +165,19 @@ public interface Aria2DownloadTaskPoService extends IService<Aria2DownloadTaskPo
         return list(qw).stream().map(Aria2DownloadTaskPo::getGid).collect(Collectors.toList());
     }
 
+    /**
+     * 获取文件库中，路径为指定前缀的文件列表
+     * @param prefix 前缀
+     * @return 文件列表
+     * @throws IOException 异常
+     */
     List<File> getAllFiles(String prefix) throws IOException;
 
+    /**
+     * 更新文件库
+     * @throws IOException 异常
+     */
     void updateAllFileList() throws IOException;
-
-    /**
-     * 将无数据的文件补充数据 并归档
-     */
-    void reEntryPixiv() throws IOException;
-
-
-    /**
-     * 整理Pixiv文件
-     */
-    default void arrangePixivFiles(String dirName) throws IOException {
-        final List<File> allFiles = getAllFiles("/pixiv/待归档/" + dirName);
-
-        final Map<Long, List<File>> filesMap = PixivIllustPo.groupFileByPid(allFiles);
-        if (filesMap.size() == 0) {
-            return;
-        }
-        filesMap.forEach((pid, files) -> {
-            final TagAnalysisResult result = getTagAnalysisResultByPid(pid);
-            final List<String> ip = result.getSortedIp();
-            if (ip.size() == 0) {
-                ip.add("原创");
-            }
-            String destDirPath = getConfig().getRootPath() + FileUtils.deleteIllegalChar(String.format("/pixiv/已归档/%s/%s/"
-                    , String.join(",", ip)
-                    , String.join(",", result.getSortedChar())
-
-            ));
-            files.forEach(file -> {
-                try {
-                    FileUtils.move(file, new File(destDirPath + FileUtils.deleteIllegalChar(file.getName())));
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            });
-
-        });
-    }
 
     /**
      * 根据pid 获取标签分析结果

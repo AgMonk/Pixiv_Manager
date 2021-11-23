@@ -1,7 +1,7 @@
-package com.gin.pixiv_manager.module.aria2.dao;
+package com.gin.pixiv_manager.module.files.dao;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.gin.pixiv_manager.module.aria2.entity.Aria2DownloadTaskPo;
+import com.gin.pixiv_manager.module.files.entity.Aria2DownloadTaskPo;
 import org.apache.ibatis.annotations.CacheNamespace;
 import org.springframework.stereotype.Repository;
 

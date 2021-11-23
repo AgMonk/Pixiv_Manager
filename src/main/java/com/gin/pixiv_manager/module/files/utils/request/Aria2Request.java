@@ -1,10 +1,10 @@
-package com.gin.pixiv_manager.module.aria2.utils.request;
+package com.gin.pixiv_manager.module.files.utils.request;
 
 import com.alibaba.fastjson.JSONObject;
-import com.gin.pixiv_manager.module.aria2.utils.method.Aria2Method;
-import com.gin.pixiv_manager.module.aria2.utils.response.Aria2Response;
-import com.gin.pixiv_manager.module.aria2.utils.response.Aria2ResponseMessage;
-import com.gin.pixiv_manager.module.aria2.utils.response.Aria2ResponseQuest;
+import com.gin.pixiv_manager.module.files.utils.method.Aria2Method;
+import com.gin.pixiv_manager.module.files.utils.response.Aria2Response;
+import com.gin.pixiv_manager.module.files.utils.response.Aria2ResponseMessage;
+import com.gin.pixiv_manager.module.files.utils.response.Aria2ResponseQuest;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;

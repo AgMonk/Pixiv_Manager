@@ -1,7 +1,6 @@
-package com.gin.pixiv_manager.module.aria2.utils.response;
+package com.gin.pixiv_manager.module.files.utils.response;
 
 import com.alibaba.fastjson.annotation.JSONField;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 
 import java.io.Serializable;

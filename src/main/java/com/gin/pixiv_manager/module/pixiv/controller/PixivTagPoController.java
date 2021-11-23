@@ -2,7 +2,7 @@ package com.gin.pixiv_manager.module.pixiv.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.gin.pixiv_manager.module.aria2.service.Aria2DownloadTaskPoService;
+import com.gin.pixiv_manager.module.files.service.Aria2DownloadTaskPoService;
 import com.gin.pixiv_manager.module.pixiv.bo.Filter4PixivTagPo;
 import com.gin.pixiv_manager.module.pixiv.bo.PixivTagPo4Set;
 import com.gin.pixiv_manager.module.pixiv.bo.TagDictionary;
@@ -59,7 +59,6 @@ public class PixivTagPoController {
      * 标签的范例缓存
      */
     private final Map<String, List<String>> tagExamplesCache = new HashMap<>();
-    ;
 
     @PostMapping("findAllCompletedTags")
     @ApiOperation(value = "查询所有已完成标签")

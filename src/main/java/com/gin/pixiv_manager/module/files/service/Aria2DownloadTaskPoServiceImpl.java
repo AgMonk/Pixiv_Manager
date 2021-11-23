@@ -1,19 +1,16 @@
-package com.gin.pixiv_manager.module.aria2.service;
+package com.gin.pixiv_manager.module.files.service;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.gin.pixiv_manager.module.aria2.config.Aria2Config;
-import com.gin.pixiv_manager.module.aria2.dao.Aria2DownloadTaskPoDao;
-import com.gin.pixiv_manager.module.aria2.entity.Aria2DownloadTaskPo;
+import com.gin.pixiv_manager.module.files.config.Aria2Config;
+import com.gin.pixiv_manager.module.files.dao.Aria2DownloadTaskPoDao;
+import com.gin.pixiv_manager.module.files.entity.Aria2DownloadTaskPo;
 import com.gin.pixiv_manager.module.pixiv.bo.TagAnalysisResult;
-import com.gin.pixiv_manager.module.pixiv.entity.PixivIllustPo;
 import com.gin.pixiv_manager.module.pixiv.entity.PixivTagPo;
 import com.gin.pixiv_manager.module.pixiv.service.PixivIllustPoService;
 import com.gin.pixiv_manager.module.pixiv.service.PixivIllustTagPoService;
 import com.gin.pixiv_manager.module.pixiv.service.PixivTagPoService;
 import com.gin.pixiv_manager.sys.config.TaskExecutePool;
 import com.gin.pixiv_manager.sys.utils.FileUtils;
-import com.gin.pixiv_manager.sys.utils.ImageUtils;
-import com.gin.pixiv_manager.sys.utils.TimeUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -23,15 +20,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
 import java.io.IOException;
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 /**
@@ -42,13 +33,13 @@ import java.util.stream.Collectors;
 @Transactional(rollbackFor = Exception.class)
 @RequiredArgsConstructor
 public class Aria2DownloadTaskPoServiceImpl extends ServiceImpl<Aria2DownloadTaskPoDao, Aria2DownloadTaskPo> implements Aria2DownloadTaskPoService {
-    private final ThreadPoolTaskExecutor fileExecutor = TaskExecutePool.getExecutor("file", 1);
     private List<File> allFiles = new ArrayList<>();
 
     private final PixivIllustTagPoService pixivIllustTagPoService;
     private final PixivTagPoService pixivTagPoService;
     private final PixivIllustPoService illustPoService;
     private final Aria2Config aria2Config;
+    private final ThreadPoolTaskExecutor fileExecutor = TaskExecutePool.getExecutor("file", 1);
 
 //    public Aria2DownloadTaskPoServiceImpl() throws IOException {
 //        fileExecutor.execute(() -> {
@@ -91,54 +82,7 @@ public class Aria2DownloadTaskPoServiceImpl extends ServiceImpl<Aria2DownloadTas
         return getConfig().getRootPath();
     }
 
-    @Override
-    @Scheduled(cron = "0/30 * * * * ?")
-    public void reEntryPixiv() throws IOException {
-        /*检查线程是否空闲*/
-        if (fileExecutor.getActiveCount() != 0) {
-            return;
-        }
-        /*获取目录文件*/
-        final List<File> fileList = FileUtils.listAllFiles(getRootPath() + "/pixiv/重新录入");
-        final Map<Long, List<File>> fileMap = PixivIllustPo.groupFileByPid(fileList);
-        fileExecutor.execute(() -> fileMap.forEach((pid, files) -> {
-            /*检查文件是否损坏 如果损坏则移动到指定文件夹*/
-            if (files.stream().anyMatch(f -> !f.getName().endsWith("zip") && !ImageUtils.verifyImage(f))) {
-                try {
-                    FileUtils.move(files, getRootPath() + "/pixiv/损坏文件");
-                    return;
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-            /*请求数据*/
-            try {
-                final Future<PixivIllustPo> future = illustPoService.findIllust(pid, ZonedDateTime.now().minusDays(1).toEpochSecond());
-                final PixivIllustPo illust = future.get(1, TimeUnit.MINUTES);
-                /*拿到数据*/
-                String pixivPath = getRootPath() + "/pixiv/待归档/" + TimeUtils.DATE_FORMATTER.format(ZonedDateTime.now());
-                files.forEach(file -> {
-                    try {
-                        FileUtils.move(file, new File(pixivPath + "/" + PixivIllustPo.parseOriginalName(file.getName())));
-                    } catch (IOException ex) {
-                        ex.printStackTrace();
-                    }
-                });
 
-            } catch (InterruptedException | TimeoutException e) {
-                e.printStackTrace();
-            } catch (ExecutionException e) {
-                if (e.getMessage().contains("该作品已被删除")) {
-                    try {
-                        FileUtils.move(files, getRootPath() + "/pixiv/档案已删除");
-                    } catch (IOException ex) {
-                        ex.printStackTrace();
-                    }
-                }
-            }
-
-        }));
-    }
 
     @Override
     public TagAnalysisResult getTagAnalysisResultByPid(long pid) {

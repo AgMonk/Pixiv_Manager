@@ -1,4 +1,4 @@
-package com.gin.pixiv_manager.module.aria2.utils.method;
+package com.gin.pixiv_manager.module.files.utils.method;
 
 import com.alibaba.fastjson.serializer.JSONSerializer;
 import com.alibaba.fastjson.serializer.ObjectSerializer;

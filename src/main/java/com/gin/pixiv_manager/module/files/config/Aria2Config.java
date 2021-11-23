@@ -1,4 +1,4 @@
-package com.gin.pixiv_manager.module.aria2.config;
+package com.gin.pixiv_manager.module.files.config;
 
 import lombok.Getter;
 import lombok.Setter;
