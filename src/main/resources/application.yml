@@ -55,8 +55,8 @@ spring:
     resources:
       cache:
         cachecontrol:
-          max-age: 60s
-      static-locations: classpath:/META-INF/resources/,classpath:/resources/,classpath:/static/,classpath:/public/,file:${aria2.rootPath}
+          max-age: 600s
+      static-locations: classpath:/META-INF/resources/,classpath:/resources/,classpath:/static/,classpath:/public/,file:${files.rootPath}
 
 # actable的配置信息
 actable:

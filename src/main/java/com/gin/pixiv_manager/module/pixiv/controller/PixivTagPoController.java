@@ -107,42 +107,37 @@ public class PixivTagPoController {
                 pixivIllustTagPoService.listPidByTag(records.stream().map(PixivTagPo::getTag).collect(Collectors.toList()))
                         .stream().collect(Collectors.groupingBy(PixivIllustTagPo::getTag));
         final List<File> allFiles = aria2DownloadTaskPoService.getAllFiles("/pixiv");
-        for (PixivTagPo tag : records) {
+        if (allFiles.size() != 0) {
+            for (PixivTagPo tag : records) {
 //            检查缓存 有直接使用
-            final List<String> cache = tagExamplesCache.get(tag.getTag());
-            if (cache != null) {
-                tag.setExamples(cache);
-                continue;
-            }
+                final List<String> cache = tagExamplesCache.get(tag.getTag());
+                if (cache != null) {
+                    tag.setExamples(cache);
+                    continue;
+                }
 //            pid列表
-            final List<Long> list = tag2PidMap.get(tag.getTag()).stream().map(PixivIllustTagPo::getPid).collect(Collectors.toList());
-            if (StringUtils.isEmpty(list)) {
-                continue;
-            }
-            final List<String> pathList = allFiles.stream()
+                final List<Long> list = tag2PidMap.get(tag.getTag()).stream().map(PixivIllustTagPo::getPid).collect(Collectors.toList());
+                if (StringUtils.isEmpty(list)) {
+                    continue;
+                }
+                final List<String> pathList = allFiles.stream()
 //                    找出文件中 pid 存在于列表中的文件
-                    .filter(file -> {
-                        final String name = file.getName();
-                        final Matcher m1 = PixivIllustPo.ILLUST_FILE_NAME_PATTERN.matcher(name);
-                        if (m1.find() && list.contains(Long.parseLong(m1.group(1)))) {
-                            return true;
-                        }
-                        final Matcher m2 = PixivIllustPo.ILLUST_GIF_FILE_NAME_PATTERN.matcher(name);
-                        if (m2.find() && list.contains(Long.parseLong(m2.group(1)))) {
-                            return true;
-                        }
-                        return false;
-                    })
-                    .map(File::getPath)
-                    .filter(path -> !path.endsWith("zip"))
-                    .map(path -> path.replace("\\", "/"))
-                    .map(path -> path.substring(path.indexOf("/pixiv")))
-                    .sorted((o1, o2) -> o2.compareToIgnoreCase(o1))
-                    .limit(5)
-                    .collect(Collectors.toList());
-
-            tagExamplesCache.put(tag.getTag(), pathList);
-            tag.setExamples(pathList);
+                        .filter(file -> !file.getPath().endsWith("zip"))
+                        .filter(file -> {
+                            final String name = file.getName();
+                            final Matcher m1 = PixivIllustPo.ILLUST_FILE_NAME_PATTERN.matcher(name);
+                            return m1.find() && list.contains(Long.parseLong(m1.group(1)));
+                        })
+                        .map(File::getPath)
+                        .map(path -> path.replace("\\", "/"))
+                        .map(path -> path.substring(path.indexOf("/pixiv")))
+                        .sorted((o1, o2) -> o2.compareToIgnoreCase(o1))
+                        .limit(5)
+                        .collect(Collectors.toList());
+                log.info("找到文件 {} 个", pathList.size());
+                tagExamplesCache.put(tag.getTag(), pathList);
+                tag.setExamples(pathList);
+            }
         }
         return Res.success("查询" + NAMESPACE + "分页数据成功", page);
     }

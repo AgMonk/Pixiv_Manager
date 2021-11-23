@@ -66,7 +66,9 @@ public class Aria2DownloadTaskPoServiceImpl extends ServiceImpl<Aria2DownloadTas
     @Scheduled(cron = "0 0/5 * * * ?")
     @Override
     public void updateAllFileList() throws IOException {
+        log.info("遍历所有文件 开始");
         this.allFiles = FileUtils.listAllFiles(getRootPath());
+        log.info("遍历所有文件 完毕 文件总计 {} 个", this.allFiles.size());
     }
 
     private String getRootPath() {
