@@ -87,8 +87,8 @@ public class PixivFilesServiceImpl implements PixivFilesService {
                 }
             }
             /*请求数据*/
+            Future<PixivIllustPo> future = illustPoService.findIllust(pid, ZonedDateTime.now().minusDays(1).toEpochSecond());
             try {
-                final Future<PixivIllustPo> future = illustPoService.findIllust(pid, ZonedDateTime.now().minusDays(1).toEpochSecond());
                 final PixivIllustPo illust = future.get(1, TimeUnit.MINUTES);
                 /*拿到数据*/
                 String downloadPath = String.format("%s/%s/%s/%s/"
@@ -106,8 +106,10 @@ public class PixivFilesServiceImpl implements PixivFilesService {
                 });
 
             } catch (InterruptedException | TimeoutException e) {
+                future.cancel(true);
                 e.printStackTrace();
             } catch (ExecutionException e) {
+                future.cancel(true);
                 if (e.getMessage().contains("该作品已被删除")) {
                     try {
                         FileUtils.move(files, getRootPath() + "/pixiv/档案已删除");

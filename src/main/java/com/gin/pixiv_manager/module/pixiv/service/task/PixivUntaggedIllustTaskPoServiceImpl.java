@@ -13,6 +13,7 @@ import com.gin.pixiv_manager.module.pixiv.utils.pixiv.response.body.PixivSearchI
 import com.gin.pixiv_manager.module.pixiv.utils.pixiv.response.entity.PixivIllust;
 import com.gin.pixiv_manager.module.pixiv.utils.pixiv.response.entity.PixivSearchIllust;
 import com.gin.pixiv_manager.module.pixiv.utils.pixiv.response.res.PixivResBookmarks;
+import com.gin.pixiv_manager.module.pixiv.utils.pixiv.response.res.PixivResBookmarksAdd;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -125,6 +126,7 @@ public class PixivUntaggedIllustTaskPoServiceImpl extends ServiceImpl<PixivUntag
                     future.cancel(true);
                     return;
                 } catch (ExecutionException e) {
+                    future.cancel(true);
                     if (e.getMessage().contains("该作品已被删除")) {
                         future.cancel(true);
                         log.warn(e.getMessage());
@@ -137,9 +139,11 @@ public class PixivUntaggedIllustTaskPoServiceImpl extends ServiceImpl<PixivUntag
                 pixivFilesService.downloadFile(illust);
                 removeById(pid);
                 activeTasks.remove(pid);
+                final Future<PixivResBookmarksAdd> fu = illustPoService.addTag(pid);
                 try {
-                    illustPoService.addTag(pid).get(30, TimeUnit.SECONDS);
+                    fu.get(30, TimeUnit.SECONDS);
                 } catch (InterruptedException | ExecutionException | TimeoutException e) {
+                    fu.cancel(true);
                     e.printStackTrace();
                 }
             });

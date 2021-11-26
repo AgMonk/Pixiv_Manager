@@ -134,7 +134,6 @@ public class PixivTagPoController {
                         .sorted((o1, o2) -> o2.compareToIgnoreCase(o1))
                         .limit(5)
                         .collect(Collectors.toList());
-                log.info("找到文件 {} 个", pathList.size());
                 tagExamplesCache.put(tag.getTag(), pathList);
                 tag.setExamples(pathList);
             }
