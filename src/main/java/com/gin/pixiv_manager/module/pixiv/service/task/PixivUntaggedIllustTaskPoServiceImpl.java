@@ -61,7 +61,7 @@ public class PixivUntaggedIllustTaskPoServiceImpl extends ServiceImpl<PixivUntag
     public void findBookmarks() throws IOException {
         final PixivCookie pixivCookie = pixivCookieService.get();
 
-        final PixivResBookmarks untagged = PixivRequest.findBookmarks(pixivCookie.getCookie(), pixivCookie.getUid(), 0, 10, "未分類");
+        final PixivResBookmarks untagged = PixivRequest.findBookmarks(pixivCookie.getCookie(), pixivCookie.getUid(), 0, 30, "未分類");
 
         if (untagged.getError()) {
             log.error(untagged.getMessage());
@@ -121,31 +121,32 @@ public class PixivUntaggedIllustTaskPoServiceImpl extends ServiceImpl<PixivUntag
                 try {
                     illust = future.get(1, TimeUnit.MINUTES);
                     this.untaggedTotal--;
+                    pixivFilesService.downloadFile(illust);
+                    removeById(pid);
+                    activeTasks.remove(pid);
+                    final Future<PixivResBookmarksAdd> fu = illustPoService.addTag(pid);
+                    try {
+                        fu.get(30, TimeUnit.SECONDS);
+                    } catch (InterruptedException | ExecutionException | TimeoutException e) {
+                        activeTasks.remove(pid);
+                        fu.cancel(true);
+                        e.printStackTrace();
+                    }
                 } catch (InterruptedException | TimeoutException e) {
                     e.printStackTrace();
                     future.cancel(true);
-                    return;
+                    removeById(pid);
+                    activeTasks.remove(pid);
                 } catch (ExecutionException e) {
                     future.cancel(true);
                     if (e.getMessage().contains("该作品已被删除")) {
-                        future.cancel(true);
                         log.warn(e.getMessage());
                         removeById(pid);
                         activeTasks.remove(pid);
                         this.untaggedTotal--;
                     }
-                    return;
                 }
-                pixivFilesService.downloadFile(illust);
-                removeById(pid);
-                activeTasks.remove(pid);
-                final Future<PixivResBookmarksAdd> fu = illustPoService.addTag(pid);
-                try {
-                    fu.get(30, TimeUnit.SECONDS);
-                } catch (InterruptedException | ExecutionException | TimeoutException e) {
-                    fu.cancel(true);
-                    e.printStackTrace();
-                }
+
             });
         });
 

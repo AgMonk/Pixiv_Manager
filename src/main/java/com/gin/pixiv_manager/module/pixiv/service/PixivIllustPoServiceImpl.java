@@ -68,7 +68,7 @@ public class PixivIllustPoServiceImpl extends ServiceImpl<IllustPoDao, PixivIllu
                     return po;
                 } catch (IOException e) {
                     if (e.getMessage().contains("该作品已被删除")) {
-                        return getById(pid);
+                        throw e;
                     } else {
                         Thread.sleep(5000);
                         e.printStackTrace();
