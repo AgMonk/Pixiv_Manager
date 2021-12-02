@@ -1,6 +1,7 @@
 package com.gin.pixiv_manager.sys.utils;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
@@ -10,14 +11,46 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.gin.pixiv_manager.sys.exception.BusinessExceptionEnum.*;
+
 /**
  * 文件操作工具类
  * @author bx002
  */
 @Slf4j
 public class FileUtils {
+
+    public static File saveMultipartFile(MultipartFile file, File destFile) throws IOException {
+        FILE_IS_NULL.assertNotNull(file);
+        FILE_IS_NULL.assertNotNull(destFile);
+
+        File parentFile = destFile.getParentFile();
+
+        if (!parentFile.exists()) {
+            FILE_CREATE_FAILED.assertTrue(parentFile.mkdirs());
+        }
+        file.transferTo(destFile);
+
+        log.info("已保存文件 {}", destFile.getPath());
+        return destFile;
+    }
+
+
     public static List<File> listAllFiles(String path) throws IOException {
         return listAllFiles(new File(path));
+    }
+
+    /**
+     * 删除文件
+     * @param file 文件
+     * @return 是否删除成功
+     */
+    public static boolean deleteFile(File file) {
+        FILE_IS_NULL.assertNotNull(file);
+        FILE_NOT_EXISTS.assertTrue(file.exists());
+        final boolean delete = file.delete();
+        log.info("删除文件 {} {}", delete ? "成功" : "失败", file);
+        return delete;
     }
 
     public static void move(File src, String destPath) throws IOException {

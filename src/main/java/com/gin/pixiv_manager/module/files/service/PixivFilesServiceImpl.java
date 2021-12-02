@@ -74,17 +74,8 @@ public class PixivFilesServiceImpl implements PixivFilesService {
         fileExecutor.execute(() -> fileMap.forEach((pid, files) -> {
             /*检查文件是否损坏 如果损坏则移动到指定文件夹*/
             if (files.stream().anyMatch(f -> !f.getName().endsWith("zip") && !ImageUtils.verifyImage(f))) {
-                try {
-                    String errorDir = String.format("%s/%s/%s"
-                            , getRootPath()
-                            , getPixivConfig().getRootPath()
-                            , getPixivConfig().getErrorDir()
-                    );
-                    FileUtils.move(files, errorDir);
-                    return;
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                handleErrorFiles(pid, files);
+                return;
             }
             /*请求数据*/
             Future<PixivIllustPo> future = illustPoService.findIllust(pid, ZonedDateTime.now().minusDays(1).toEpochSecond());
@@ -112,7 +103,7 @@ public class PixivFilesServiceImpl implements PixivFilesService {
                 future.cancel(true);
                 if (e.getMessage().contains("该作品已被删除")) {
                     try {
-                        FileUtils.move(files, getRootPath() + "/pixiv/档案已删除");
+                        FileUtils.move(files, getErrorDir());
                     } catch (IOException ex) {
                         ex.printStackTrace();
                     }
@@ -120,6 +111,44 @@ public class PixivFilesServiceImpl implements PixivFilesService {
             }
 
         }));
+    }
+
+    /**
+     * 处理损坏的图片文件
+     * @param pid   pid
+     * @param files 文件
+     */
+    private void handleErrorFiles(long pid, List<File> files) {
+        Future<PixivIllustPo> future = illustPoService.findIllust(pid, ZonedDateTime.now().minusDays(1).toEpochSecond());
+        try {
+            final PixivIllustPo illust = future.get(1, TimeUnit.MINUTES);
+//            作品还在，重新下载，删除损坏文件
+            if (illust != null) {
+                downloadFile(illust);
+                files.forEach(FileUtils::deleteFile);
+            }
+        } catch (ExecutionException e) {
+//            作品已删除，移动到已删除文件夹
+            if (e.getMessage().contains("该作品已被删除")) {
+                try {
+                    FileUtils.move(files, getErrorDir());
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+            }
+            e.printStackTrace();
+        } catch (InterruptedException | TimeoutException e) {
+            future.cancel(true);
+            e.printStackTrace();
+        }
+    }
+
+    private String getErrorDir() {
+        return String.format("%s/%s/%s"
+                , getRootPath()
+                , getPixivConfig().getRootPath()
+                , getPixivConfig().getErrorDir()
+        );
     }
 
     @Override

@@ -39,6 +39,7 @@ public class Aria2Request {
             return JSONObject.parseObject(responseBody, clazz);
         } catch (IOException e) {
             // ... handle IO exception
+            e.printStackTrace();
         }
         return null;
     }
