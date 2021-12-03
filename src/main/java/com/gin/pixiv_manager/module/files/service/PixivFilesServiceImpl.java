@@ -71,46 +71,48 @@ public class PixivFilesServiceImpl implements PixivFilesService {
         );
         final List<File> fileList = FileUtils.listAllFiles(reEntryPath);
         final Map<Long, List<File>> fileMap = PixivIllustPo.groupFileByPid(fileList);
-        fileExecutor.execute(() -> fileMap.forEach((pid, files) -> {
-            /*检查文件是否损坏 如果损坏则移动到指定文件夹*/
-            if (files.stream().anyMatch(f -> !f.getName().endsWith("zip") && !ImageUtils.verifyImage(f))) {
-                handleErrorFiles(pid, files);
-                return;
-            }
-            /*请求数据*/
-            Future<PixivIllustPo> future = illustPoService.findIllust(pid, ZonedDateTime.now().minusDays(1).toEpochSecond());
-            try {
-                final PixivIllustPo illust = future.get(1, TimeUnit.MINUTES);
-                /*拿到数据*/
-                String downloadPath = String.format("%s/%s/%s/%s/"
-                        , getRootPath()
-                        , getPixivConfig().getRootPath()
-                        , getPixivConfig().getUntaggedDir()
-                        , TimeUtils.DATE_FORMATTER.format(ZonedDateTime.now())
-                );
-                files.forEach(file -> {
-                    try {
-                        FileUtils.move(file, new File(downloadPath + PixivIllustPo.parseOriginalName(file.getName())));
-                    } catch (IOException ex) {
-                        ex.printStackTrace();
+        fileExecutor.execute(() ->
+                fileMap.forEach((pid, files) ->
+                {
+                    /*检查文件是否损坏 如果损坏则移动到指定文件夹*/
+                    if (files.stream().anyMatch(f -> !f.getName().endsWith("zip") && !ImageUtils.verifyImage(f))) {
+                        handleErrorFiles(pid, files);
+                        return;
                     }
-                });
-
-            } catch (InterruptedException | TimeoutException e) {
-                future.cancel(true);
-                e.printStackTrace();
-            } catch (ExecutionException e) {
-                future.cancel(true);
-                if (e.getMessage().contains("该作品已被删除")) {
+                    /*请求数据*/
+                    Future<PixivIllustPo> future = illustPoService.findIllust(pid, ZonedDateTime.now().minusDays(1).toEpochSecond());
                     try {
-                        FileUtils.move(files, getErrorDir());
-                    } catch (IOException ex) {
-                        ex.printStackTrace();
-                    }
-                }
-            }
+                        final PixivIllustPo illust = future.get(1, TimeUnit.MINUTES);
+                        /*拿到数据*/
+                        String downloadPath = String.format("%s/%s/%s/%s/"
+                                , getRootPath()
+                                , getPixivConfig().getRootPath()
+                                , getPixivConfig().getUntaggedDir()
+                                , TimeUtils.DATE_FORMATTER.format(ZonedDateTime.now())
+                        );
+                        files.forEach(file -> {
+                            try {
+                                FileUtils.move(file, new File(downloadPath + PixivIllustPo.parseOriginalName(file.getName())));
+                            } catch (IOException ex) {
+                                ex.printStackTrace();
+                            }
+                        });
 
-        }));
+                    } catch (InterruptedException | TimeoutException e) {
+                        future.cancel(true);
+                        e.printStackTrace();
+                    } catch (ExecutionException e) {
+                        future.cancel(true);
+                        if (e.getMessage().contains("该作品已被删除")) {
+                            try {
+                                FileUtils.move(files, getErrorDir());
+                            } catch (IOException ex) {
+                                ex.printStackTrace();
+                            }
+                        }
+                    }
+
+                }));
     }
 
     /**

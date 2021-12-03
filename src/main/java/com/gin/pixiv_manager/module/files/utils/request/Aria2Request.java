@@ -22,7 +22,7 @@ import java.util.Collection;
 public class Aria2Request {
     public static final String RPC_URL = "http://localhost:6800/jsonrpc";
 
-    private static <T extends Aria2Response> T send(Aria2RequestParam param, Class<T> clazz) {
+    private static <T extends Aria2Response> T send(Aria2RequestParam param, Class<T> clazz) throws IOException {
         try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
             HttpPost httpPost = new HttpPost(RPC_URL);
             final String string = JSONObject.toJSONString(param);
@@ -40,35 +40,36 @@ public class Aria2Request {
         } catch (IOException e) {
             // ... handle IO exception
             e.printStackTrace();
+            throw e;
         }
-        return null;
+//        return null;
     }
 
-    public static Aria2ResponseQuest tellStop() {
+    public static Aria2ResponseQuest tellStop() throws IOException {
         final Aria2RequestParam param = Aria2Method.TELL_STOPPED.toParam();
         param.addParam(-1);
         param.addParam(1000);
         return send(param, Aria2ResponseQuest.class);
     }
 
-    public static Aria2ResponseQuest tellActive() {
+    public static Aria2ResponseQuest tellActive() throws IOException {
         return send(Aria2Method.TELL_ACTIVE.toParam(), Aria2ResponseQuest.class);
     }
 
-    public static Aria2ResponseQuest tellWaiting() {
+    public static Aria2ResponseQuest tellWaiting() throws IOException {
         final Aria2RequestParam param = Aria2Method.TELL_WAITING.toParam();
         param.addParam(0);
         param.addParam(1000);
         return send(param, Aria2ResponseQuest.class);
     }
 
-    public static Aria2ResponseMessage removeQuest(String gid) {
+    public static Aria2ResponseMessage removeQuest(String gid) throws IOException {
         final Aria2RequestParam param = Aria2Method.REMOVE_DOWNLOAD_RESULT.toParam();
         param.addParam(gid);
         return send(param, Aria2ResponseMessage.class);
     }
 
-    public static Aria2ResponseMessage addUri(Collection<String> url, Aria2UriOption option) {
+    public static Aria2ResponseMessage addUri(Collection<String> url, Aria2UriOption option) throws IOException {
         final Aria2RequestParam param = Aria2Method.ADD_URI.toParam();
         param.addParam(url);
         param.addParam(option);

@@ -33,7 +33,7 @@ public interface Aria2DownloadTaskPoService extends IService<Aria2DownloadTaskPo
      * 移除已完成的任务
      */
     @Scheduled(cron = "0/10 * * * * ?")
-    default void removeCompletedTask() {
+    default void removeCompletedTask() throws IOException {
         final List<String> gidList = listAllGid();
 //        查询已完成且来自本系统的任务
         final List<Aria2Quest> stopQuest = Aria2Request.tellStop().getResult();
@@ -47,7 +47,9 @@ public interface Aria2DownloadTaskPoService extends IService<Aria2DownloadTaskPo
             final QueryWrapper<Aria2DownloadTaskPo> qw2 = new QueryWrapper<>();
             qw2.in("gid", completedQuest);
             remove(qw2);
-            completedQuest.forEach(Aria2Request::removeQuest);
+            for (String s : completedQuest) {
+                Aria2Request.removeQuest(s);
+            }
             gidList.removeAll(completedQuest);
         }
 
@@ -79,7 +81,11 @@ public interface Aria2DownloadTaskPoService extends IService<Aria2DownloadTaskPo
         qw.orderByDesc("priority");
         qw.orderByAsc("timestamp");
         qw.last("limit " + count);
-        final List<Aria2DownloadTaskPo> tasks = list(qw).stream().map(Aria2DownloadTaskPo::execute).collect(Collectors.toList());
+        final List<Aria2DownloadTaskPo> tasks = new ArrayList<>();
+        for (Aria2DownloadTaskPo aria2DownloadTaskPo : list(qw)) {
+            Aria2DownloadTaskPo execute = aria2DownloadTaskPo.execute();
+            tasks.add(execute);
+        }
         if (tasks.size() > 0) {
             LOG.info("开始执行 {} 个 任务", tasks.size());
             updateBatchById(tasks);

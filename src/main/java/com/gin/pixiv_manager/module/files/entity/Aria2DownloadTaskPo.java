@@ -14,6 +14,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -73,7 +74,7 @@ public class Aria2DownloadTaskPo implements Serializable {
         return option;
     }
 
-    public Aria2DownloadTaskPo execute() {
+    public Aria2DownloadTaskPo execute() throws IOException {
         this.gid = Aria2Request.addUri(this.urls, this.toOption()).getResult();
         Aria2DownloadTaskPo entity = new Aria2DownloadTaskPo();
         entity.setUuid(this.uuid);
