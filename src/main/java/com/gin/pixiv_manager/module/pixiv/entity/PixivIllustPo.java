@@ -96,6 +96,8 @@ public class PixivIllustPo implements Serializable {
                         .replace("img-original", "img-zip-ugoira");
                 this.originalUrl += "_ugoira1920x1080.zip";
                 break;
+            default:
+                throw new IllegalStateException("Unexpected value: " + detail.getIllustType());
         }
 
 

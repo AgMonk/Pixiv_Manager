@@ -106,7 +106,7 @@ public class TagDictionary implements Serializable {
     static void putChineseWhenNotContain(Map<String, String> dic, String s1, String s2, double c1, double c2, String reason) {
         if (!dic.containsKey(s1)) {
             final String j2 = JianFan.f2j(s2);
-        //    System.out.printf("%s(%s)(%s) -> %s(%s)\n", s1, c1, reason, j2, c2);
+            //    System.out.printf("%s(%s)(%s) -> %s(%s)\n", s1, c1, reason, j2, c2);
             dic.put(s1, j2);
         }
     }
@@ -300,15 +300,10 @@ public class TagDictionary implements Serializable {
         if (matcher.find()) {
             final String character = matcher.group(1).trim();
             final String ip = matcher.group(2).trim();
-            final String tCharacter = dic.get(character);
-            final String tIp = dic.get(ip);
-            if (dic.containsKey(character) && dic.containsKey(ip)) {
-                suggests.add(String.format("%s(%s)", tCharacter, tIp));
-            } else if (dic.containsKey(character)) {
-                suggests.add(String.format("%s(%s)", tCharacter, ip));
-            } else if (dic.containsKey(ip)) {
-                suggests.add(String.format("%s(%s)", character, tIp));
-            }
+            final String tCharacter = dic.getOrDefault(character, character);
+            final String tIp = dic.getOrDefault(ip, ip);
+            final String format = "泳装".equals(tIp) ? "%s<%s>" : "%s(%s)";
+            suggests.add(String.format(format, tCharacter, tIp));
         }
 
         /*todo*/

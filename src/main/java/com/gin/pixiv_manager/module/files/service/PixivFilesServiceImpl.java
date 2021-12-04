@@ -28,6 +28,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.stream.Collectors;
 
 import static com.gin.pixiv_manager.module.pixiv.entity.PixivIllustPo.ILLUST_TYPE_GIF;
 
@@ -71,10 +72,13 @@ public class PixivFilesServiceImpl implements PixivFilesService {
         );
         final List<File> fileList = FileUtils.listAllFiles(reEntryPath);
         final Map<Long, List<File>> fileMap = PixivIllustPo.groupFileByPid(fileList);
+        final List<Long> pidList = fileMap.keySet().stream().limit(3).collect(Collectors.toList());
         fileExecutor.execute(() ->
-                fileMap.forEach((pid, files) ->
+                pidList.forEach(pid ->
+//                fileMap.forEach((pid, files) ->
                 {
-                    /*检查文件是否损坏 如果损坏则移动到指定文件夹*/
+                    final List<File> files = fileMap.get(pid);
+                    /*检查文件是否损坏 */
                     if (files.stream().anyMatch(f -> !f.getName().endsWith("zip") && !ImageUtils.verifyImage(f))) {
                         handleErrorFiles(pid, files);
                         return;
@@ -91,21 +95,34 @@ public class PixivFilesServiceImpl implements PixivFilesService {
                                 , TimeUtils.DATE_FORMATTER.format(ZonedDateTime.now())
                         );
                         files.forEach(file -> {
+                            File dest = new File(downloadPath + PixivIllustPo.parseOriginalName(file.getName()));
+                            while (dest.exists()) {
+                                if (file.length() == dest.length()) {
+                                    FileUtils.deleteFile(file);
+                                    break;
+                                }
+                                final String path = dest.getPath();
+                                final int index = path.lastIndexOf(".");
+                                final String start = path.substring(0, index);
+                                final String end = path.substring(index);
+                                final String newPath = start + "_bak" + end;
+                                dest = new File(newPath);
+                            }
                             try {
-                                FileUtils.move(file, new File(downloadPath + PixivIllustPo.parseOriginalName(file.getName())));
-                            } catch (IOException ex) {
-                                ex.printStackTrace();
+                                FileUtils.move(file, dest);
+                            } catch (IOException e) {
+                                e.printStackTrace();
                             }
                         });
 
                     } catch (InterruptedException | TimeoutException e) {
                         future.cancel(true);
-                        e.printStackTrace();
+//                        e.printStackTrace();
                     } catch (ExecutionException e) {
                         future.cancel(true);
                         if (e.getMessage().contains("该作品已被删除")) {
                             try {
-                                FileUtils.move(files, getErrorDir());
+                                FileUtils.move(files, getDeletedDir());
                             } catch (IOException ex) {
                                 ex.printStackTrace();
                             }
@@ -133,7 +150,7 @@ public class PixivFilesServiceImpl implements PixivFilesService {
 //            作品已删除，移动到已删除文件夹
             if (e.getMessage().contains("该作品已被删除")) {
                 try {
-                    FileUtils.move(files, getErrorDir());
+                    FileUtils.move(files, getDeletedDir());
                 } catch (IOException ex) {
                     ex.printStackTrace();
                 }
@@ -145,11 +162,11 @@ public class PixivFilesServiceImpl implements PixivFilesService {
         }
     }
 
-    private String getErrorDir() {
+    private String getDeletedDir() {
         return String.format("%s/%s/%s"
                 , getRootPath()
                 , getPixivConfig().getRootPath()
-                , getPixivConfig().getErrorDir()
+                , getPixivConfig().getDeletedDir()
         );
     }
 
