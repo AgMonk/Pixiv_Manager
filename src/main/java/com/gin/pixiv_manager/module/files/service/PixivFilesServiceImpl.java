@@ -99,7 +99,7 @@ public class PixivFilesServiceImpl implements PixivFilesService {
                             while (dest.exists()) {
                                 if (file.length() == dest.length()) {
                                     FileUtils.deleteFile(file);
-                                    break;
+                                    return;
                                 }
                                 final String path = dest.getPath();
                                 final int index = path.lastIndexOf(".");
@@ -121,15 +121,25 @@ public class PixivFilesServiceImpl implements PixivFilesService {
                     } catch (ExecutionException e) {
                         future.cancel(true);
                         if (e.getMessage().contains("该作品已被删除")) {
-                            try {
-                                FileUtils.move(files, getDeletedDir());
-                            } catch (IOException ex) {
-                                ex.printStackTrace();
-                            }
+                            handleDeletedFiles(pid, files);
                         }
                     }
 
                 }));
+    }
+
+    /**
+     * 处理已经被删除的作品文件
+     * @param files 文件
+     */
+    private void handleDeletedFiles(Long pid, List<File> files) {
+        /*todo 尝试从旧数据中查询*/
+
+        try {
+            FileUtils.move(files, getDeletedDir());
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
     }
 
     /**
@@ -143,17 +153,14 @@ public class PixivFilesServiceImpl implements PixivFilesService {
             final PixivIllustPo illust = future.get(1, TimeUnit.MINUTES);
 //            作品还在，重新下载，删除损坏文件
             if (illust != null) {
-                downloadFile(illust);
-                files.forEach(FileUtils::deleteFile);
+                if (downloadFile(illust) > 0) {
+                    files.forEach(FileUtils::deleteFile);
+                }
             }
         } catch (ExecutionException e) {
 //            作品已删除，移动到已删除文件夹
             if (e.getMessage().contains("该作品已被删除")) {
-                try {
-                    FileUtils.move(files, getDeletedDir());
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                }
+                handleDeletedFiles(pid, files);
             }
             e.printStackTrace();
         } catch (InterruptedException | TimeoutException e) {
@@ -207,7 +214,7 @@ public class PixivFilesServiceImpl implements PixivFilesService {
      * @param illust 作品详情
      */
     @Override
-    public void downloadFile(PixivIllustPo illust) {
+    public int downloadFile(PixivIllustPo illust) {
         String downloadPath = String.format("%s/%s/%s/%s"
                 , getRootPath()
                 , getPixivConfig().getRootPath()
@@ -221,7 +228,7 @@ public class PixivFilesServiceImpl implements PixivFilesService {
             String uuid = illust.getId() + "_u0";
             if (aria2DownloadTaskPoService.getById(uuid) != null) {
                 log.warn("已经有相同任务 pid = {}", illust.getId());
-                return;
+                return 0;
             }
             final String oUrl = illust.getOriginalUrl();
             final String rUrl2 = oUrl.replace("i.pximg.net", PIXIV_RE_DOMAIN_2);
@@ -236,6 +243,7 @@ public class PixivFilesServiceImpl implements PixivFilesService {
             task.setTimestamp(ZonedDateTime.now().toEpochSecond());
             aria2DownloadTaskPoService.save(task);
             log.info("添加 1 个 动图任务 {}", illust.getId());
+            return 1;
         } else {
             //                其他 可能添加多个任务
             List<Aria2DownloadTaskPo> taskList = new ArrayList<>();
@@ -243,7 +251,7 @@ public class PixivFilesServiceImpl implements PixivFilesService {
                 final String uuid = illust.getId() + "_p" + i;
                 if (aria2DownloadTaskPoService.getById(uuid) != null) {
                     log.warn("已经有相同任务 pid = {}", illust.getId());
-                    return;
+                    return 0;
                 }
                 final String oUrl = illust.getOriginalUrl().replace("_p0", "_p" + i);
                 final String suffix = oUrl.substring(oUrl.lastIndexOf('.'));
@@ -263,6 +271,7 @@ public class PixivFilesServiceImpl implements PixivFilesService {
             }
             log.info("添加 {} 个 插画/漫画任务 {}", taskList.size(), illust.getId());
             aria2DownloadTaskPoService.saveBatch(taskList);
+            return taskList.size();
         }
     }
 }

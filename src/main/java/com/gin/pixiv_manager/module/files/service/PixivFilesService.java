@@ -27,5 +27,5 @@ public interface PixivFilesService {
      * 下载一个Pixiv作品
      * @param illust 作品详情
      */
-    void downloadFile(PixivIllustPo illust);
+    int downloadFile(PixivIllustPo illust);
 }

@@ -16,6 +16,7 @@ public class ImageUtils {
      * @return boolean true 正常 false 损坏
      */
     public static boolean verifyImage(File file) {
+//            System.out.println("file = " + file);
         try (FileInputStream fis = new FileInputStream(file)) {
             BufferedImage sourceImg = ImageIO.read(fis);
             if (sourceImg == null) {

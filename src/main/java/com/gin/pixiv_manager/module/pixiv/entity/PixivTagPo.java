@@ -1,6 +1,5 @@
 package com.gin.pixiv_manager.module.pixiv.entity;
 
-import com.baomidou.mybatisplus.annotation.FieldStrategy;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -54,17 +53,17 @@ public class PixivTagPo implements Serializable {
     String originalTranslation;
 
     @Column(comment = "自定义翻译", length = 500)
-    @TableField(updateStrategy = FieldStrategy.IGNORED)
+//    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @Unique
     String customTranslation;
 
     @Column(comment = "重定向到其他Tag", length = 500)
-    @TableField(updateStrategy = FieldStrategy.IGNORED)
+//    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @Index
     String redirect;
 
     @Column(comment = "标签类型")
-    @TableField(updateStrategy = FieldStrategy.IGNORED)
+//    @TableField(updateStrategy = FieldStrategy.IGNORED)
     String type;
 
     @TableField(exist = false)
@@ -83,6 +82,11 @@ public class PixivTagPo implements Serializable {
         if (this.originalTranslation != null) {
             this.originalTranslation = this.originalTranslation.replace("（", "(").replace("）", ")");
         }
+    }
+
+    public PixivTagPo(String tag, String originalTranslation) {
+        this.tag = tag;
+        this.originalTranslation = originalTranslation;
     }
 
     @Override

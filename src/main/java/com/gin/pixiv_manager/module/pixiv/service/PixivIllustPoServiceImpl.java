@@ -3,10 +3,7 @@ package com.gin.pixiv_manager.module.pixiv.service;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.gin.pixiv_manager.module.pixiv.bo.TagAnalysisResult;
 import com.gin.pixiv_manager.module.pixiv.dao.IllustPoDao;
-import com.gin.pixiv_manager.module.pixiv.entity.PixivCookie;
-import com.gin.pixiv_manager.module.pixiv.entity.PixivIllustPo;
-import com.gin.pixiv_manager.module.pixiv.entity.PixivTagPo;
-import com.gin.pixiv_manager.module.pixiv.entity.PixivUserInfoPo;
+import com.gin.pixiv_manager.module.pixiv.entity.*;
 import com.gin.pixiv_manager.module.pixiv.utils.pixiv.request.PixivRequest;
 import com.gin.pixiv_manager.module.pixiv.utils.pixiv.response.body.PixivIllustDetail;
 import com.gin.pixiv_manager.module.pixiv.utils.pixiv.response.res.PixivResBookmarksAdd;
@@ -40,6 +37,7 @@ public class PixivIllustPoServiceImpl extends ServiceImpl<IllustPoDao, PixivIllu
     private final PixivTagPoService pixivTagPoService;
     private final PixivIllustTagPoService pixivIllustTagPoService;
     private final ThreadPoolTaskExecutor bookmarkExecutor;
+    private final PixivIllustOldPoService pixivIllustOldPoService;
 
     @Override
     public Future<PixivIllustPo> findIllust(long pid, Long dataUpdatedTime) {
@@ -68,7 +66,18 @@ public class PixivIllustPoServiceImpl extends ServiceImpl<IllustPoDao, PixivIllu
                     return po;
                 } catch (IOException e) {
                     if (e.getMessage().contains("该作品已被删除")) {
-                        throw e;
+
+                        final PixivIllustOldPo oldData = pixivIllustOldPoService.getById(pid);
+                        if (oldData == null) {
+//                            没找到旧数据 抛出异常
+                            throw e;
+                        }
+                        /* 找到旧数据 复制并返回*/
+                        final PixivIllustPo po = oldData.toPixivIllustPo();
+                        saveOrUpdate(po);
+                        handleUserInfo(oldData.getUserId(), oldData.getUserName());
+                        handleTags(pid, oldData.toPixivTagPoList());
+                        return po;
                     } else {
                         Thread.sleep(5000);
                         e.printStackTrace();
@@ -119,4 +128,9 @@ public class PixivIllustPoServiceImpl extends ServiceImpl<IllustPoDao, PixivIllu
     private void handleUserInfo(PixivIllustDetail body) {
         pixivUserInfoPoService.saveUserInfo(new PixivUserInfoPo(body));
     }
+
+    private void handleUserInfo(Long userId, String userName) {
+        pixivUserInfoPoService.saveUserInfo(new PixivUserInfoPo(userId, userName));
+    }
+
 }

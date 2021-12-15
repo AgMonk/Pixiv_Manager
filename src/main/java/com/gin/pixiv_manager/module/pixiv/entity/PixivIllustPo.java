@@ -36,29 +36,34 @@ public class PixivIllustPo implements Serializable {
     public final static String ILLUST_TYPE_GIF = "动图";
     public final static Pattern ILLUST_FILE_NAME_PATTERN = Pattern.compile("(\\d+)_p(\\d+)");
     public final static Pattern ILLUST_GIF_FILE_NAME_PATTERN = Pattern.compile("(\\d+)_u");
+
+    public final static Pattern ILLUST_FILE_NAME_INFO_TITLE_PATTERN_0 = Pattern.compile("title_([^]]+)");
+    public final static Pattern ILLUST_FILE_NAME_INFO_TITLE_PATTERN_1 = Pattern.compile("ti_([^]]+)");
+    public final static Pattern ILLUST_FILE_NAME_INFO_TAGS_PATTERN = Pattern.compile("tags*_([^]]+)");
+    public final static Pattern ILLUST_FILE_NAME_INFO_BMK_PATTERN = Pattern.compile("bmk_([^]]+)");
 //    public final static Pattern ILLUST_GIF_FILE_NAME_PATTERN = Pattern.compile("(\\d+)_ugoira1920x1080");
 
     @TableId
     @IsKey
     @Column(isNull = false)
     Long id;
-    @Column(comment = "喜欢数量", isNull = false)
+    @Column(comment = "喜欢数量", isNull = false, defaultValue = "0")
     Integer likeCount;
-    @Column(comment = "高", isNull = false)
+    @Column(comment = "高", isNull = false, defaultValue = "0")
     Integer height;
-    @Column(comment = "宽", isNull = false)
+    @Column(comment = "宽", isNull = false, defaultValue = "0")
     Integer width;
     @Column(comment = "收藏数", isNull = false)
     Integer bookmarkCount;
     @Column(comment = "收藏ID")
     Long bookmarkId;
-    @Column(comment = "标题", isNull = false)
+    @Column(comment = "标题", isNull = false, defaultValue = "无题")
     String title;
-    @Column(comment = "原图地址", isNull = false)
+    @Column(comment = "原图地址", isNull = false, defaultValue = "无")
     String originalUrl;
-    @Column(comment = "作品类型", isNull = false)
+    @Column(comment = "作品类型", isNull = false, defaultValue = ILLUST_TYPE_ILLUSTRATION)
     String type;
-    @Column(comment = "总页数", isNull = false)
+    @Column(comment = "总页数", isNull = false, defaultValue = "0")
     Integer pageCount;
     @Column(comment = "作者id", isNull = false)
     Long userId;
