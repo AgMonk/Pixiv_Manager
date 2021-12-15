@@ -42,6 +42,7 @@ import static com.gin.pixiv_manager.module.pixiv.entity.PixivIllustPo.ILLUST_TYP
 public class PixivFilesServiceImpl implements PixivFilesService {
     private final static String PIXIV_RE_DOMAIN = "https://pixiv.re/";
     private final static String PIXIV_RE_DOMAIN_2 = "i.pixiv.re";
+    public static final String MESSAGE_DELETED = "该作品已被删除";
 
     private final PixivIllustPoService illustPoService;
     private final FilesConfig filesConfig;
@@ -120,7 +121,7 @@ public class PixivFilesServiceImpl implements PixivFilesService {
 //                        e.printStackTrace();
                     } catch (ExecutionException e) {
                         future.cancel(true);
-                        if (e.getMessage().contains("该作品已被删除")) {
+                        if (e.getMessage().contains(MESSAGE_DELETED)) {
                             handleDeletedFiles(pid, files);
                         }
                     }
@@ -155,11 +156,13 @@ public class PixivFilesServiceImpl implements PixivFilesService {
             if (illust != null) {
                 if (downloadFile(illust) > 0) {
                     files.forEach(FileUtils::deleteFile);
+                } else {
+                    handleDeletedFiles(pid, files);
                 }
             }
         } catch (ExecutionException e) {
 //            作品已删除，移动到已删除文件夹
-            if (e.getMessage().contains("该作品已被删除")) {
+            if (e.getMessage().contains(MESSAGE_DELETED)) {
                 handleDeletedFiles(pid, files);
             }
             e.printStackTrace();

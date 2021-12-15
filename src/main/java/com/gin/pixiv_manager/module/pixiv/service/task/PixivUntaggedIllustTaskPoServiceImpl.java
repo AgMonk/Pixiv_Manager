@@ -33,6 +33,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
+import static com.gin.pixiv_manager.module.files.service.PixivFilesServiceImpl.MESSAGE_DELETED;
+
 /**
  * @author bx002
  */
@@ -139,7 +141,7 @@ public class PixivUntaggedIllustTaskPoServiceImpl extends ServiceImpl<PixivUntag
                     activeTasks.remove(pid);
                 } catch (ExecutionException e) {
                     future.cancel(true);
-                    if (e.getMessage().contains("该作品已被删除")) {
+                    if (e.getMessage().contains(MESSAGE_DELETED)) {
                         log.warn(e.getMessage());
                         removeById(pid);
                         activeTasks.remove(pid);

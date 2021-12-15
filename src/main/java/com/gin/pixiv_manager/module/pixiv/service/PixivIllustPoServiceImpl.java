@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
+import static com.gin.pixiv_manager.module.files.service.PixivFilesServiceImpl.MESSAGE_DELETED;
+
 /**
  * @author bx002
  */
@@ -65,7 +67,7 @@ public class PixivIllustPoServiceImpl extends ServiceImpl<IllustPoDao, PixivIllu
 
                     return po;
                 } catch (IOException e) {
-                    if (e.getMessage().contains("该作品已被删除")) {
+                    if (e.getMessage().contains(MESSAGE_DELETED)) {
 
                         final PixivIllustOldPo oldData = pixivIllustOldPoService.getById(pid);
                         if (oldData == null) {
