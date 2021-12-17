@@ -33,16 +33,6 @@ public class PixivTagPo implements Serializable {
     public static final String TYPE_BMK_COUNT = "收藏数";
     public static final String TYPE_SKIN = "皮肤";
     public static final String USELESS_PREFIX = "#";
-    //    public static final String TYPE_ACTION = "动作";
-//    public static final String TYPE_CLOTHING = "服装";
-//    public static final String TYPE_ITEM = "物品";
-//    public static final String TYPE_CP = "CP";
-//    public static final String TYPE_OTHER = "其他";
-//    public static final String TYPE_POSITION = "部位";
-//    public static final String TYPE_HAIRSTYLE = "发型";
-//    public static final String TYPE_COLOR = "颜色";
-//    public static final String TYPE_ADJECTIVE = "形容词";
-//    public static final String TYPE_ORGANIZATION = "组织";
 
 
     @TableId
@@ -50,20 +40,20 @@ public class PixivTagPo implements Serializable {
     @Column(comment = "标签名称")
     String tag;
 
-    @Column(comment = "原翻译", length = 500)
+    @Column(comment = "原翻译", length = 100)
     String originalTranslation;
 
-    @Column(comment = "自定义翻译", length = 500)
+    @Column(comment = "自定义翻译", length = 100)
 //    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @Unique
     String customTranslation;
 
-    @Column(comment = "重定向到其他Tag", length = 500)
+    @Column(comment = "重定向到其他Tag", length = 100)
 //    @TableField(updateStrategy = FieldStrategy.IGNORED)
-    @Index
+    @Index(columns = {"custom_translation", "redirect", "type", "count"})
     String redirect;
 
-    @Column(comment = "标签类型")
+    @Column(comment = "标签类型", length = 50)
 //    @TableField(updateStrategy = FieldStrategy.IGNORED)
     String type;
 

@@ -11,7 +11,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.PostConstruct;
 import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -44,7 +43,7 @@ public class PixivIllustTagPoServiceImpl extends ServiceImpl<PixivIllustTagPoDao
     /**
      * 更新tag的使用次数
      */
-    @PostConstruct
+//    @PostConstruct
     @Scheduled(cron = "10 0/10 * * * ?")
     public void updateTagCount() {
         final List<PixivTagPo> list = countTag().stream().map(PixivIllustTagPo::toPixivTagPo).collect(Collectors.toList());
