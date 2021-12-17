@@ -135,4 +135,5 @@ public class PixivIllustPoServiceImpl extends ServiceImpl<IllustPoDao, PixivIllu
         pixivUserInfoPoService.saveUserInfo(new PixivUserInfoPo(userId, userName));
     }
 
+
 }

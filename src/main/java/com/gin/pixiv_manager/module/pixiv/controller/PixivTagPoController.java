@@ -89,6 +89,7 @@ public class PixivTagPoController {
         /*todo 暂时屏蔽收藏数tag */
         qw.and(q -> q.isNull("type").or().ne("type", TYPE_BMK_COUNT));
 
+
         Page<PixivTagPo> page = service.page(new Page<>(params.getPage(), params.getSize()), qw);
 //      后续处理
         List<PixivTagPo> records = page.getRecords();

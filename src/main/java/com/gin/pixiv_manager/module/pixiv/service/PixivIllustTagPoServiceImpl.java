@@ -7,11 +7,14 @@ import com.gin.pixiv_manager.module.pixiv.entity.PixivIllustTagPo;
 import com.gin.pixiv_manager.module.pixiv.entity.PixivTagPo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.PostConstruct;
 import java.util.HashSet;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author bx002
@@ -25,6 +28,7 @@ public class PixivIllustTagPoServiceImpl extends ServiceImpl<PixivIllustTagPoDao
     private final PixivTagPoService pixivTagPoService;
 
 
+
     @Override
     public TagAnalysisResult getTagAnalysisResultByPid(long pid) {
         final List<String> tagList = listTagByPid(pid);
@@ -35,5 +39,17 @@ public class PixivIllustTagPoServiceImpl extends ServiceImpl<PixivIllustTagPoDao
         final TagAnalysisResult result = new TagAnalysisResult(tags);
         result.setPid(pid);
         return result;
+    }
+
+    /**
+     * 更新tag的使用次数
+     */
+    @PostConstruct
+    @Scheduled(cron = "10 0/10 * * * ?")
+    public void updateTagCount() {
+        final List<PixivTagPo> list = countTag().stream().map(PixivIllustTagPo::toPixivTagPo).collect(Collectors.toList());
+        log.info("更新tag的使用次数 开始");
+        pixivTagPoService.updateBatchById(list);
+        log.info("更新tag的使用次数 完毕");
     }
 }

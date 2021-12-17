@@ -65,4 +65,14 @@ public interface PixivIllustTagPoService extends IService<PixivIllustTagPo> {
      * @return 标签分析结果
      */
     TagAnalysisResult getTagAnalysisResultByPid(long pid);
+
+    /**
+     * 统计tag的使用次数
+     * @return tag的使用次数
+     */
+    default List<PixivIllustTagPo> countTag() {
+        final QueryWrapper<PixivIllustTagPo> qw = new QueryWrapper<>();
+        qw.select("tag", "count(1) as count").groupBy("tag");
+        return list(qw);
+    }
 }

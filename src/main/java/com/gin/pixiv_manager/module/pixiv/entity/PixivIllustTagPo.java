@@ -1,5 +1,6 @@
 package com.gin.pixiv_manager.module.pixiv.entity;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.gitee.sunchenbin.mybatis.actable.annotation.Column;
@@ -38,6 +39,9 @@ public class PixivIllustTagPo implements Serializable {
     @Index
     String tag;
 
+    @TableField(exist = false)
+    Integer count;
+
     public void createUuid() {
         this.uuid = UUID.randomUUID().toString();
     }
@@ -50,5 +54,12 @@ public class PixivIllustTagPo implements Serializable {
             entity.setTag(i);
             return entity;
         }).collect(Collectors.toList());
+    }
+
+    public PixivTagPo toPixivTagPo() {
+        final PixivTagPo po = new PixivTagPo();
+        po.setTag(this.tag);
+        po.setCount(this.count);
+        return po;
     }
 }
