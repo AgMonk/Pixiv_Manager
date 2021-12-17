@@ -87,12 +87,12 @@ public class PixivTagPoController {
         }
 
         /*todo 暂时屏蔽收藏数tag */
-        qw.ne("type", TYPE_BMK_COUNT);
+        qw.and(q -> q.isNull("type").or().ne("type", TYPE_BMK_COUNT));
 
         Page<PixivTagPo> page = service.page(new Page<>(params.getPage(), params.getSize()), qw);
 //      后续处理
         List<PixivTagPo> records = page.getRecords();
-
+        log.info("找到作品 {} 个", page.getTotal());
 //        补充翻译推荐
         final TagDictionary dic = new TagDictionary(service);
 

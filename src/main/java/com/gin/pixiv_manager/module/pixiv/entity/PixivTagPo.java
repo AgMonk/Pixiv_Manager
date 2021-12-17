@@ -32,7 +32,8 @@ public class PixivTagPo implements Serializable {
     public static final String TYPE_IP = "作品";
     public static final String TYPE_BMK_COUNT = "收藏数";
     public static final String TYPE_SKIN = "皮肤";
-//    public static final String TYPE_ACTION = "动作";
+    public static final String USELESS_PREFIX = "#";
+    //    public static final String TYPE_ACTION = "动作";
 //    public static final String TYPE_CLOTHING = "服装";
 //    public static final String TYPE_ITEM = "物品";
 //    public static final String TYPE_CP = "CP";
@@ -66,6 +67,9 @@ public class PixivTagPo implements Serializable {
 //    @TableField(updateStrategy = FieldStrategy.IGNORED)
     String type;
 
+    @Column(comment = "被使用次数", defaultValue = "0")
+    Integer count;
+
     @TableField(exist = false)
     List<String> suggest;
 
@@ -77,16 +81,21 @@ public class PixivTagPo implements Serializable {
 
 
     public PixivTagPo(PixivTag pixivTag) {
-        this.tag = pixivTag.getTag();
-        this.originalTranslation = pixivTag.getOriginalTranslation();
-        if (this.originalTranslation != null) {
-            this.originalTranslation = this.originalTranslation.replace("（", "(").replace("）", ")");
-        }
+        this(pixivTag.getTag(), pixivTag.getOriginalTranslation());
     }
 
     public PixivTagPo(String tag, String originalTranslation) {
         this.tag = tag;
+        if (this.tag.startsWith(USELESS_PREFIX)) {
+            this.tag = this.tag.substring(1);
+        }
         this.originalTranslation = originalTranslation;
+        if (this.originalTranslation != null) {
+            if (this.originalTranslation.startsWith(USELESS_PREFIX)) {
+                this.originalTranslation = this.originalTranslation.substring(1);
+            }
+            this.originalTranslation = this.originalTranslation.replace("（", "(").replace("）", ")");
+        }
     }
 
     @Override
