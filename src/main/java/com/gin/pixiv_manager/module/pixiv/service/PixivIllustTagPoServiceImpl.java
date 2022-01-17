@@ -11,6 +11,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -30,7 +31,7 @@ public class PixivIllustTagPoServiceImpl extends ServiceImpl<PixivIllustTagPoDao
 
     @Override
     public TagAnalysisResult getTagAnalysisResultByPid(long pid) {
-        final List<String> tagList = listTagByPid(pid);
+        final List<String> tagList = listTagByPid(Collections.singleton(pid));
         if (tagList.size() == 0) {
             return null;
         }

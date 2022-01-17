@@ -23,6 +23,9 @@ public class Filter4PixivTagPo implements Serializable, IFilter {
     @ApiModelProperty(required = true, allowableValues = TYPE_1 + "," + TYPE_2 + "," + TYPE_3 + ",", example = TYPE_1)
     String type;
 
+    @ApiModelProperty(value = "指定目录")
+    String dirName;
+
     @Override
     public void handleQueryWrapper(QueryWrapper<?> queryWrapper) {
         @SuppressWarnings("unchecked") QueryWrapper<PixivTagPo> qw = (QueryWrapper<PixivTagPo>) queryWrapper;

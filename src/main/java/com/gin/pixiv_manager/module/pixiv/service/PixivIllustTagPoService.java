@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -22,9 +23,9 @@ public interface PixivIllustTagPoService extends IService<PixivIllustTagPo> {
      * @param pid pid
      * @return 根据pid查询tag
      */
-    default List<PixivIllustTagPo> listByPid(long pid){
+    default List<PixivIllustTagPo> listByPid(Collection<Long> pid) {
         final QueryWrapper<PixivIllustTagPo> qw = new QueryWrapper<>();
-        qw.eq("pid",pid);
+        qw.in("pid", pid);
         return list(qw);
     }
 
@@ -33,8 +34,8 @@ public interface PixivIllustTagPoService extends IService<PixivIllustTagPo> {
      * @param pid pid
      * @return 根据pid查询tag名称
      */
-    default List<String> listTagByPid(long pid){
-        return listByPid(pid).stream().map(PixivIllustTagPo::getTag).collect(Collectors.toList());
+    default List<String> listTagByPid(Collection<Long> pid) {
+        return listByPid(pid).stream().map(PixivIllustTagPo::getTag).distinct().collect(Collectors.toList());
     }
 
     /**
@@ -43,7 +44,7 @@ public interface PixivIllustTagPoService extends IService<PixivIllustTagPo> {
      * @param tags tags
      */
     default void savePixivIllustTag(long pid, List<String> tags) {
-        tags.removeAll(listTagByPid(pid));
+        tags.removeAll(listTagByPid(Collections.singleton(pid)));
         if (tags.size() == 0) {
             return;
         }

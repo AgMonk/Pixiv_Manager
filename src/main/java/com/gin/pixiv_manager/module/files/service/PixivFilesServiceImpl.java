@@ -234,6 +234,19 @@ public class PixivFilesServiceImpl implements PixivFilesService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public Set<Long> listPidOfDir(String dirName) throws IOException {
+        String dirPath = String.format("%s/%s/%s/%s"
+                , getRootPath()
+                , getPixivConfig().getRootPath()
+                , getPixivConfig().getUntaggedDir()
+                , dirName
+        );
+        final List<File> files = FileUtils.listAllFiles(dirPath);
+        return PixivIllustPo.groupFileByPid(files).keySet();
+
+    }
+
     /**
      * 下载一个Pixiv作品
      * @param illust 作品详情

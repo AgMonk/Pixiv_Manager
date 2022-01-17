@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.Future;
@@ -92,7 +93,7 @@ public class PixivIllustPoServiceImpl extends ServiceImpl<IllustPoDao, PixivIllu
 
     @Override
     public Future<PixivResBookmarksAdd> addTag(long pid) {
-        final List<String> illustTagNames = pixivIllustTagPoService.listTagByPid(pid);
+        final List<String> illustTagNames = pixivIllustTagPoService.listTagByPid(Collections.singleton(pid));
         if (illustTagNames.size() == 0) {
             throw new BusinessException(4000, "没有Tag数据，请先请求详情");
         }

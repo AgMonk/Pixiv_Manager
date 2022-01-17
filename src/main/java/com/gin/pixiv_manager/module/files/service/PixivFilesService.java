@@ -5,6 +5,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author bx002
@@ -25,6 +26,13 @@ public interface PixivFilesService {
     void arrangeFiles(String dirName) throws IOException;
 
     List<String> listDirs();
+
+    /**
+     * 返回指定目录内文件的pid
+     * @param dirName 目录名
+     * @return pid
+     */
+    Set<Long> listPidOfDir(String dirName) throws IOException;
 
     /**
      * 下载一个Pixiv作品

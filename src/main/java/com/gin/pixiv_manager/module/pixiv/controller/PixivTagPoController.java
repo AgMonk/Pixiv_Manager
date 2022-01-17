@@ -3,6 +3,7 @@ package com.gin.pixiv_manager.module.pixiv.controller;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.gin.pixiv_manager.module.files.service.Aria2DownloadTaskPoService;
+import com.gin.pixiv_manager.module.files.service.PixivFilesService;
 import com.gin.pixiv_manager.module.pixiv.bo.Filter4PixivTagPo;
 import com.gin.pixiv_manager.module.pixiv.bo.PixivTagPo4Set;
 import com.gin.pixiv_manager.module.pixiv.bo.TagDictionary;
@@ -32,6 +33,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 
@@ -52,6 +54,7 @@ public class PixivTagPoController {
     public static final String NAMESPACE = "PixivTag";
 
     private final PixivTagPoService service;
+    private final PixivFilesService pixivFilesService;
     private final Aria2DownloadTaskPoService aria2DownloadTaskPoService;
     private final PixivIllustTagPoService pixivIllustTagPoService;
     private final PixivTagTypePoService pixivTagTypePoService;
@@ -84,6 +87,13 @@ public class PixivTagPoController {
         Filter4PixivTagPo filter = params.getFilter();
         if (filter != null) {
             filter.handleQueryWrapper(qw);
+
+            final String dirName = filter.getDirName();
+            if (!StringUtils.isEmpty(dirName)) {
+                final Set<Long> pid = pixivFilesService.listPidOfDir(dirName);
+                final List<String> tags = pixivIllustTagPoService.listTagByPid(pid);
+                qw.in("tag", tags);
+            }
         }
 
         /*todo 暂时屏蔽收藏数tag */
