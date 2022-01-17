@@ -121,7 +121,6 @@ public class PixivIllustPo implements Serializable {
                 return Long.parseLong(m2.group(1));
             }
             return 0L;
-
         }));
     }
 

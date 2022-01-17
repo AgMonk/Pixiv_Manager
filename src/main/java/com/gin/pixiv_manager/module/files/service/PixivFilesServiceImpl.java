@@ -21,9 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.File;
 import java.io.IOException;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -78,7 +76,11 @@ public class PixivFilesServiceImpl implements PixivFilesService {
                 pidList.forEach(pid ->
 //                fileMap.forEach((pid, files) ->
                 {
+                    if (pid == 0L) {
+                        return;
+                    }
                     final List<File> files = fileMap.get(pid);
+                    files.forEach(file -> log.info("重新录入文件 {}", file));
                     /*检查文件是否损坏 */
                     if (files.stream().anyMatch(f -> !f.getName().endsWith("zip") && !ImageUtils.verifyImage(f))) {
                         handleErrorFiles(pid, files);
@@ -89,7 +91,7 @@ public class PixivFilesServiceImpl implements PixivFilesService {
                     try {
                         final PixivIllustPo illust = future.get(1, TimeUnit.MINUTES);
                         /*拿到数据*/
-                        String downloadPath = String.format("%s/%s/%s/%s/"
+                        String downloadPath = String.format("%s/%s/%s/%s_re/"
                                 , getRootPath()
                                 , getPixivConfig().getRootPath()
                                 , getPixivConfig().getUntaggedDir()
@@ -182,7 +184,13 @@ public class PixivFilesServiceImpl implements PixivFilesService {
 
     @Override
     public void arrangeFiles(String dirName) throws IOException {
-        final List<File> allFiles = aria2DownloadTaskPoService.getAllFiles("/pixiv/待归档/" + dirName);
+        String untaggedDirPath = String.format("/%s/%s/%s"
+                , getPixivConfig().getRootPath()
+                , getPixivConfig().getUntaggedDir()
+                , dirName
+        );
+
+        final List<File> allFiles = aria2DownloadTaskPoService.getAllFiles(untaggedDirPath);
 
         final Map<Long, List<File>> filesMap = PixivIllustPo.groupFileByPid(allFiles);
         if (filesMap.size() == 0) {
@@ -210,6 +218,20 @@ public class PixivFilesServiceImpl implements PixivFilesService {
             });
 
         });
+    }
+
+    @Override
+    public List<String> listDirs() {
+        String untaggedDirPath = String.format("%s/%s/%s"
+                , getRootPath()
+                , getPixivConfig().getRootPath()
+                , getPixivConfig().getUntaggedDir()
+        );
+        return Arrays.stream(Objects.requireNonNull(new File(untaggedDirPath).listFiles()))
+                .filter(Objects::nonNull).filter(File::isDirectory)
+                .filter(file -> !file.isHidden())
+                .map(File::getName)
+                .collect(Collectors.toList());
     }
 
     /**

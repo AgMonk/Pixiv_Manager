@@ -4,6 +4,7 @@ import com.gin.pixiv_manager.module.pixiv.entity.PixivIllustPo;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  * @author bx002
@@ -22,6 +23,8 @@ public interface PixivFilesService {
      * @throws IOException 异常
      */
     void arrangeFiles(String dirName) throws IOException;
+
+    List<String> listDirs();
 
     /**
      * 下载一个Pixiv作品

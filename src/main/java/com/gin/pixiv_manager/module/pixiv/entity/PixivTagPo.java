@@ -40,7 +40,7 @@ public class PixivTagPo implements Serializable {
     @Column(comment = "标签名称")
     String tag;
 
-    @Column(comment = "原翻译", length = 100)
+    @Column(comment = "原翻译", length = 200)
     String originalTranslation;
 
     @Column(comment = "自定义翻译", length = 100)
