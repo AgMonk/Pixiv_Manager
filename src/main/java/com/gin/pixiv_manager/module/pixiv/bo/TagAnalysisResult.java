@@ -53,17 +53,17 @@ public class TagAnalysisResult implements Serializable {
                     }
                 }
                 break;
-                case PixivTagPo.TYPE_BMK_COUNT:
-//                    tag为收藏数，解析内容
-                {
-                    final Matcher matcher = PixivTagPo.PATTERN_BMK_COUNT.matcher(finalTranslation);
-                    if (matcher.find()) {
-                        ip.add(matcher.group(1).trim());
-                    } else {
-                        other.add(finalTranslation);
-                    }
-                }
-                break;
+//                case PixivTagPo.TYPE_BMK_COUNT:
+////                    tag为收藏数，解析内容
+//                {
+//                    final Matcher matcher = PixivTagPo.PATTERN_BMK_COUNT.matcher(finalTranslation);
+//                    if (matcher.find()) {
+//                        ip.add(matcher.group(1).trim());
+//                    } else {
+//                        other.add(finalTranslation);
+//                    }
+//                }
+//                break;
                 case PixivTagPo.TYPE_SKIN:
 //                    tag为皮肤，解析内容
                 {

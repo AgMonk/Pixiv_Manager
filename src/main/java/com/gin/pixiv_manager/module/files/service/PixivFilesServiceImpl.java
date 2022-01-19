@@ -141,6 +141,27 @@ public class PixivFilesServiceImpl implements PixivFilesService {
         try {
             FileUtils.move(files, getDeletedDir());
         } catch (IOException ex) {
+            String m = "指定文件已存在：";
+            final String message = ex.getMessage();
+            if (message.startsWith(m)) {
+                String path = message.replace(m, "");
+                final int index = path.lastIndexOf(".");
+                final String s1 = path.substring(0, index);
+                final String s2 = path.substring(index);
+                StringBuilder path2 = new StringBuilder(s1 + "_bak");
+                while (new File(path2 + s2).exists()) {
+                    path2.append("_bak");
+                }
+                final File f1 = new File(path);
+                final File f2 = new File(path2 + s2);
+
+                //noinspection ResultOfMethodCallIgnored
+                try {
+                    FileUtils.move(f1, f2);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
             ex.printStackTrace();
         }
     }
@@ -202,10 +223,12 @@ public class PixivFilesServiceImpl implements PixivFilesService {
             if (ip.size() == 0) {
                 ip.add("原创");
             }
+            final String datetime = TimeUtils.DATE_TIME_FORMATTER.format(ZonedDateTime.now());
             String destDirPath = getRootPath() + FileUtils.deleteIllegalChar(
-                    String.format("/%s/%s/%s/%s/"
+                    String.format("/%s/%s/%s/%s/%s/"
                             , getPixivConfig().getRootPath()
                             , getPixivConfig().getTaggedDir()
+                            , datetime.substring(0, datetime.length() - 3)
                             , String.join(",", ip)
                             , String.join(",", result.getSortedChar()))
             );
