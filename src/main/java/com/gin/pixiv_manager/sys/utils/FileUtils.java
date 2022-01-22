@@ -5,10 +5,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.gin.pixiv_manager.sys.exception.BusinessExceptionEnum.*;
@@ -138,5 +135,52 @@ public class FileUtils {
         if (!file.isDirectory()) {
             throw new IOException("指定文件不是目录：" + file.getPath());
         }
+    }
+
+
+    public static void groupFiles(String path, int count, String... suffix) throws IOException {
+        final List<File> files = listAllFiles(path);
+        files.sort(Comparator.comparing(File::getName));
+
+        if (suffix != null && suffix.length > 0) {
+            final List<String> list = Arrays.stream(suffix).collect(Collectors.toList());
+            files.removeIf(file -> {
+                final String s = file.getName().substring(file.getName().lastIndexOf(".") + 1);
+                return !list.contains(s);
+            });
+        }
+
+        int i = 0;
+        while (files.size() > 0) {
+            final List<File> list = files.subList(0, Math.min(files.size(), count));
+            String destDirName = String.format("分组_%03d", i);
+            for (File file : list) {
+                final File destFile = new File(path + '/' + destDirName + '/' + file.getName());
+                try {
+                    move(file, destFile);
+                } catch (IOException e) {
+                    if (e.getMessage().startsWith("指定文件已存在")) {
+                        if (file.length() == destFile.length()) {
+                            file.delete();
+                            log.info("文件大小一致 删除 {}", file);
+                        } else {
+                            try {
+                                move(file, path + "/" + String.format("重复_%03d", i));
+                            } catch (IOException ex) {
+                                ex.printStackTrace();
+                            }
+                        }
+                    } else {
+                        throw e;
+                    }
+                }
+            }
+            files.removeAll(list);
+            i++;
+        }
+    }
+
+    public static void main(String[] args) throws IOException {
+        groupFiles("H:\\illust\\pixiv\\旧数据", 300, "zip", "gif", "png", "jpg");
     }
 }

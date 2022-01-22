@@ -80,7 +80,7 @@ public class PixivFilesServiceImpl implements PixivFilesService {
                         return;
                     }
                     final List<File> files = fileMap.get(pid);
-                    files.forEach(file -> log.info("重新录入文件 {}", file));
+                    files.forEach(file -> log.info("重新录入文件 {}", file.getName()));
                     /*检查文件是否损坏 */
                     if (files.stream().anyMatch(f -> !f.getName().endsWith("zip") && !ImageUtils.verifyImage(f))) {
                         handleErrorFiles(pid, files);
