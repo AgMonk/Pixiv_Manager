@@ -220,18 +220,21 @@ public class PixivFilesServiceImpl implements PixivFilesService {
         filesMap.forEach((pid, files) -> {
             final TagAnalysisResult result = pixivIllustTagPoService.getTagAnalysisResultByPid(pid);
             final List<String> ip = result.getSortedIp();
-            if (ip.size() == 0) {
-                ip.add("原创");
-            }
+            final List<String> skin = result.getSortedSkin();
             final String datetime = TimeUtils.DATE_TIME_FORMATTER.format(ZonedDateTime.now());
-            String destDirPath = getRootPath() + FileUtils.deleteIllegalChar(
-                    String.format("/%s/%s/%s/%s/%s/"
-                            , getPixivConfig().getRootPath()
-                            , getPixivConfig().getTaggedDir()
-                            , datetime.substring(0, datetime.length() - 3)
-                            , String.join(",", ip)
-                            , String.join(",", result.getSortedChar()))
-            );
+            List<String> pathList = new ArrayList<>();
+            pathList.add(getRootPath());
+            pathList.add(getPixivConfig().getRootPath());
+            pathList.add(getPixivConfig().getTaggedDir());
+//            时间区分
+            pathList.add(datetime.substring(0, datetime.length() - 3));
+            pathList.add(String.join(",", ip));
+            pathList.add(String.join(",", result.getSortedChar()));
+            if (skin.size() > 0) {
+                pathList.add(String.join(",", skin));
+            }
+            String destDirPath = "/" + String.join("/", pathList);
+
             files.forEach(file -> {
                 try {
                     FileUtils.move(file, new File(destDirPath + FileUtils.deleteIllegalChar(file.getName())));

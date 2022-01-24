@@ -19,6 +19,7 @@ import java.util.regex.Matcher;
 public class TagAnalysisResult implements Serializable {
     Long pid;
     HashSet<String> ip = new HashSet<>();
+    HashSet<String> skin = new HashSet<>();
     HashSet<String> character = new HashSet<>();
     HashSet<String> other = new HashSet<>();
 
@@ -70,7 +71,7 @@ public class TagAnalysisResult implements Serializable {
                     final Matcher matcher = PixivTagPo.PATTERN_SKIN.matcher(finalTranslation);
                     if (matcher.find()) {
                         character.add(matcher.group(1).trim());
-                        other.add(matcher.group(2).trim());
+                        skin.add(matcher.group(2).trim());
                     } else {
                         other.add(finalTranslation);
                     }
@@ -89,6 +90,11 @@ public class TagAnalysisResult implements Serializable {
     }
 
     public List<String> getSortedIp() {
+        if (ip.size() == 0) {
+            ip.add("原创");
+        } else if (ip.contains("原创") && ip.size() > 1) {
+            ip.remove("原创");
+        }
         return getSortedList(ip);
     }
 
@@ -98,6 +104,10 @@ public class TagAnalysisResult implements Serializable {
 
     public List<String> getSortedOther() {
         return getSortedList(other);
+    }
+
+    public List<String> getSortedSkin() {
+        return getSortedList(skin);
     }
 
     public List<String> getAll() {
