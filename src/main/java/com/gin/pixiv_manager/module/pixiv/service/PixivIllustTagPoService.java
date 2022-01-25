@@ -1,6 +1,7 @@
 package com.gin.pixiv_manager.module.pixiv.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.gin.pixiv_manager.module.pixiv.bo.TagAnalysisResult;
 import com.gin.pixiv_manager.module.pixiv.entity.PixivIllustTagPo;
@@ -73,7 +74,18 @@ public interface PixivIllustTagPoService extends IService<PixivIllustTagPo> {
      */
     default List<PixivIllustTagPo> countTag() {
         final QueryWrapper<PixivIllustTagPo> qw = new QueryWrapper<>();
-        qw.select("tag", "count(1) as count").groupBy("tag");
-        return list(qw);
+        qw.select("tag").eq("need_count", 1).groupBy("tag");
+        final List<String> tags = list(qw).stream().map(PixivIllustTagPo::getTag).collect(Collectors.toList());
+        if (tags.size() == 0) {
+            return new ArrayList<>();
+        }
+        final QueryWrapper<PixivIllustTagPo> qw2 = new QueryWrapper<>();
+        qw2.select("tag", "count(1) as count").in("tag", tags).groupBy("tag");
+
+//        修改need_count
+        final UpdateWrapper<PixivIllustTagPo> uw = new UpdateWrapper<>();
+        uw.set("need_count", 0).in("tag", tags);
+        update(uw);
+        return list(qw2);
     }
 }

@@ -39,6 +39,10 @@ public class PixivIllustTagPo implements Serializable {
     @Index
     String tag;
 
+    @Column(comment = "是否需要统计数量", defaultValue = "1")
+    @Index
+    Integer needCount;
+
     @TableField(exist = false)
     Integer count;
 

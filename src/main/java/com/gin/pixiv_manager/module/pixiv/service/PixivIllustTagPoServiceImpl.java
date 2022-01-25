@@ -28,7 +28,6 @@ public class PixivIllustTagPoServiceImpl extends ServiceImpl<PixivIllustTagPoDao
     private final PixivTagPoService pixivTagPoService;
 
 
-
     @Override
     public TagAnalysisResult getTagAnalysisResultByPid(long pid) {
         final List<String> tagList = listTagByPid(Collections.singleton(pid));
@@ -48,6 +47,10 @@ public class PixivIllustTagPoServiceImpl extends ServiceImpl<PixivIllustTagPoDao
     @Scheduled(cron = "10 0/10 * * * ?")
     public void updateTagCount() {
         final List<PixivTagPo> list = countTag().stream().map(PixivIllustTagPo::toPixivTagPo).collect(Collectors.toList());
+        if (list.size() == 0) {
+            log.info("tag使用次数未更新");
+            return;
+        }
         log.info("更新tag的使用次数 开始");
         pixivTagPoService.updateBatchById(list);
         log.info("更新tag的使用次数 完毕");
