@@ -1,7 +1,7 @@
 logging:
   config: classpath:log4j2.properties
   level:
-    com.gin: debug
+    com.gin: info
 
 spring:
   datasource:

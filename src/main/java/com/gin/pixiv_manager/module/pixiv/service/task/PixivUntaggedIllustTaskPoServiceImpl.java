@@ -129,13 +129,16 @@ public class PixivUntaggedIllustTaskPoServiceImpl extends ServiceImpl<PixivUntag
                     final Future<PixivResBookmarksAdd> fu = illustPoService.addTag(pid);
                     try {
                         fu.get(30, TimeUnit.SECONDS);
-                    } catch (InterruptedException | ExecutionException | TimeoutException e) {
+                    } catch (InterruptedException | ExecutionException e) {
                         activeTasks.remove(pid);
                         fu.cancel(true);
                         e.printStackTrace();
+                    } catch (TimeoutException e) {
+                        activeTasks.remove(pid);
+                        fu.cancel(true);
                     }
                 } catch (InterruptedException | TimeoutException e) {
-                    e.printStackTrace();
+//                    e.printStackTrace();
                     future.cancel(true);
                     removeById(pid);
                     activeTasks.remove(pid);
