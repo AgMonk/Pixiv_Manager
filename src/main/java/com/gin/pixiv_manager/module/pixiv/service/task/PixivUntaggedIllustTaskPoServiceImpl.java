@@ -14,6 +14,7 @@ import com.gin.pixiv_manager.module.pixiv.utils.pixiv.response.entity.PixivIllus
 import com.gin.pixiv_manager.module.pixiv.utils.pixiv.response.entity.PixivSearchIllust;
 import com.gin.pixiv_manager.module.pixiv.utils.pixiv.response.res.PixivResBookmarks;
 import com.gin.pixiv_manager.module.pixiv.utils.pixiv.response.res.PixivResBookmarksAdd;
+import com.gin.pixiv_manager.sys.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -61,44 +62,48 @@ public class PixivUntaggedIllustTaskPoServiceImpl extends ServiceImpl<PixivUntag
     @Override
     @Scheduled(cron = "0 0/5 * * * ?")
     public void findBookmarks() throws IOException {
-        final PixivCookie pixivCookie = pixivCookieService.get();
+        try {
+            final PixivCookie pixivCookie = pixivCookieService.get();
 
-        final PixivResBookmarks untagged = PixivRequest.findBookmarks(pixivCookie.getCookie(), pixivCookie.getUid(), 0, 30, "未分類");
+            final PixivResBookmarks untagged = PixivRequest.findBookmarks(pixivCookie.getCookie(), pixivCookie.getUid(), 0, 30, "未分類");
 
-        if (untagged.getError()) {
-            log.error(untagged.getMessage());
-            return;
-        }
-        final PixivSearchIllustManga body = untagged.getBody();
-        final Integer total = body.getTotal();
-        if (total == 0) {
-            return;
-        }
-        log.info("未分类作品剩余 {} 个", total);
-        this.untaggedTotal = total;
-        final List<PixivSearchIllust> data = body.getData().stream().filter(i -> {
-            if (i.getUserId() == 0) {
-                log.warn("作品已经被删除 移除收藏 pid = " + i.getId());
-                this.untaggedTotal--;
-                bookmarkExecutor.execute(() -> {
-                    try {
-                        PixivRequest.bookmarksDelete(pixivCookie.getCookie(), pixivCookie.getToken(), i.getBookmarkData().getId());
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                });
-                return false;
+            if (untagged.getError()) {
+                log.error(untagged.getMessage());
+                return;
             }
-            return true;
-        }).collect(Collectors.toList());
-        final List<Long> pidList = data.stream()
-                .map(PixivIllust::getId).collect(Collectors.toList());
-        final List<Long> existsPid = listByIds(pidList).stream().map(PixivUntaggedIllustTaskPo::getPid).collect(Collectors.toList());
+            final PixivSearchIllustManga body = untagged.getBody();
+            final Integer total = body.getTotal();
+            if (total == 0) {
+                return;
+            }
+            log.info("未分类作品剩余 {} 个", total);
+            this.untaggedTotal = total;
+            final List<PixivSearchIllust> data = body.getData().stream().filter(i -> {
+                if (i.getUserId() == 0) {
+                    log.warn("作品已经被删除 移除收藏 pid = " + i.getId());
+                    this.untaggedTotal--;
+                    bookmarkExecutor.execute(() -> {
+                        try {
+                            PixivRequest.bookmarksDelete(pixivCookie.getCookie(), pixivCookie.getToken(), i.getBookmarkData().getId());
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    });
+                    return false;
+                }
+                return true;
+            }).collect(Collectors.toList());
+            final List<Long> pidList = data.stream()
+                    .map(PixivIllust::getId).collect(Collectors.toList());
+            final List<Long> existsPid = listByIds(pidList).stream().map(PixivUntaggedIllustTaskPo::getPid).collect(Collectors.toList());
 
-        pidList.removeAll(existsPid);
+            pidList.removeAll(existsPid);
 
-        if (pidList.size() > 0) {
-            saveBatch(pidList.stream().map(PixivUntaggedIllustTaskPo::new).collect(Collectors.toList()));
+            if (pidList.size() > 0) {
+                saveBatch(pidList.stream().map(PixivUntaggedIllustTaskPo::new).collect(Collectors.toList()));
+            }
+        } catch (BusinessException e) {
+            log.error(String.format("%s - %s", e.getCode(), e.getMessage()));
         }
     }
 

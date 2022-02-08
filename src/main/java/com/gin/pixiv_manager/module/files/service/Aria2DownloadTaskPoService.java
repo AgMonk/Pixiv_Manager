@@ -8,6 +8,7 @@ import com.gin.pixiv_manager.module.files.entity.Aria2DownloadTaskPo;
 import com.gin.pixiv_manager.module.files.utils.request.Aria2Request;
 import com.gin.pixiv_manager.module.files.utils.response.Aria2Quest;
 import com.gin.pixiv_manager.sys.utils.StringUtils;
+import org.apache.http.conn.HttpHostConnectException;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,24 +37,27 @@ public interface Aria2DownloadTaskPoService extends IService<Aria2DownloadTaskPo
      */
     @Scheduled(cron = "0/10 * * * * ?")
     default void check() throws IOException {
-        final List<String> gidList = listAllGid();
+        try {
+            final List<String> gidList = listAllGid();
 //        查询已完成且来自本系统的任务
-        removeCompletedTasks(gidList);
+            removeCompletedTasks(gidList);
 
-        final List<Aria2Quest> activeQuest = Aria2Request.tellActive().getResult();
-        final List<Aria2Quest> waitingQuest = Aria2Request.tellWaiting().getResult();
+            final List<Aria2Quest> activeQuest = Aria2Request.tellActive().getResult();
+            final List<Aria2Quest> waitingQuest = Aria2Request.tellWaiting().getResult();
 
-        resetDeletedQuest(gidList, activeQuest, waitingQuest);
+            resetDeletedQuest(gidList, activeQuest, waitingQuest);
 
-        int count = getConfig().getAira2().getMaxTasks() - activeQuest.size() - waitingQuest.size();
+            int count = getConfig().getAira2().getMaxTasks() - activeQuest.size() - waitingQuest.size();
 
-        if (count <= 0) {
-//        队列数量较多 不添加新任务
-            return;
-        }
+            if (count <= 0) {
+                //        队列数量较多 不添加新任务
+                return;
+            }
 //        提交下载
-        addQuests(count);
-
+            addQuests(count);
+        } catch (HttpHostConnectException e) {
+            LOG.error(e.getMessage());
+        }
     }
 
     /**

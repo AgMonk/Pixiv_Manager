@@ -50,8 +50,8 @@ public class PixivRequest {
                 int status = httpResponse.getStatusLine().getStatusCode();
                 if (status < 200 || status >= 300) {
                     // ... handle unsuccessful request
-                    if (status == 504) {
-                        throw new BusinessException(5040, "网络错误 等待重试");
+                    if (status == 504 || status == 502) {
+                        throw new BusinessException(status * 10, "网络错误 等待重试");
                     }
                 }
                 log.info("请求结束 status = {} url = {}", status, finalRequestUrl);
@@ -87,8 +87,8 @@ public class PixivRequest {
                 int status = httpResponse.getStatusLine().getStatusCode();
                 if (status < 200 || status >= 300) {
                     // ... handle unsuccessful request
-                    if (status == 504) {
-                        throw new BusinessException(5040, "网络错误 等待重试");
+                    if (status == 504 || status == 502) {
+                        throw new BusinessException(status * 10, "网络错误 等待重试");
                     }
                 }
                 log.info("请求结束 status = {} url = {}", status, url);
