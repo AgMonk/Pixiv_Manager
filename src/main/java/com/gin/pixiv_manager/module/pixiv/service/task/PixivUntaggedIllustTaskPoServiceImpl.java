@@ -117,6 +117,7 @@ public class PixivUntaggedIllustTaskPoServiceImpl extends ServiceImpl<PixivUntag
             return;
         }
         final long time = ZonedDateTime.now().minusHours(1).toEpochSecond();
+//        添加tag
         bookmarkExecutor.execute(() -> {
             Map<Long, Future<PixivIllustPo>> taskMap = new HashMap<>();
             for (Long pid : pidList) {
@@ -134,18 +135,22 @@ public class PixivUntaggedIllustTaskPoServiceImpl extends ServiceImpl<PixivUntag
                     final Future<PixivResBookmarksAdd> fu = illustPoService.addTag(pid);
                     try {
                         fu.get(30, TimeUnit.SECONDS);
-                    } catch (InterruptedException | ExecutionException e) {
-                        activeTasks.remove(pid);
+                    } catch (InterruptedException | ExecutionException | TimeoutException ignored) {
                         fu.cancel(true);
-                        e.printStackTrace();
-                    } catch (TimeoutException e) {
+                    } finally {
                         activeTasks.remove(pid);
-                        fu.cancel(true);
+                    }
+                } catch (BusinessException e) {
+                    future.cancel(true);
+                    activeTasks.remove(pid);
+                    final String message = e.getMessage();
+                    log.error(message);
+                    if (message.startsWith("没有Tag数据，请先请求详情")) {
+                        log.warn("重新添加详情任务 pid = {}", pid);
+                        saveOrUpdate(new PixivUntaggedIllustTaskPo(pid));
                     }
                 } catch (InterruptedException | TimeoutException e) {
-//                    e.printStackTrace();
                     future.cancel(true);
-                    removeById(pid);
                     activeTasks.remove(pid);
                 } catch (ExecutionException e) {
                     future.cancel(true);

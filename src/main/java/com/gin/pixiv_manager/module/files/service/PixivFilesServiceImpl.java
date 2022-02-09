@@ -319,14 +319,14 @@ public class PixivFilesServiceImpl implements PixivFilesService {
                 }
                 final String oUrl = illust.getOriginalUrl().replace("_p0", "_p" + i);
                 final String suffix = oUrl.substring(oUrl.lastIndexOf('.'));
-                final String rUrl = PIXIV_RE_DOMAIN + illust.getId() + (i > 0 ? ("-" + i) : "") + suffix;
+//                final String rUrl = PIXIV_RE_DOMAIN + illust.getId() + (i > 0 ? ("-" + i) : "") + suffix;
                 final String rUrl2 = oUrl.replace("i.pximg.net", PIXIV_RE_DOMAIN_2);
                 final String filename = oUrl.substring(oUrl.lastIndexOf("/") + 1);
 
                 Aria2DownloadTaskPo task = new Aria2DownloadTaskPo();
                 task.setDir(downloadPath);
                 task.setFileName(filename);
-                task.setUrls(List.of(oUrl, rUrl, rUrl2));
+                task.setUrls(List.of(oUrl, rUrl2));
                 task.setUuid(uuid);
                 task.setType("pixiv-插画/漫画");
                 task.setPriority(1);

@@ -63,8 +63,8 @@ public class PixivIllustPoServiceImpl extends ServiceImpl<IllustPoDao, PixivIllu
                     final PixivIllustPo po = new PixivIllustPo(body, res.getTimestamp());
                     saveOrUpdate(po);
 
-                    handleUserInfo(body);
                     handleTags(body.getId(), body.getTags().getTags().stream().map(PixivTagPo::new).collect(Collectors.toList()));
+                    handleUserInfo(body);
 
                     return po;
                 } catch (IOException e) {
@@ -95,7 +95,7 @@ public class PixivIllustPoServiceImpl extends ServiceImpl<IllustPoDao, PixivIllu
     public Future<PixivResBookmarksAdd> addTag(long pid) {
         final List<String> illustTagNames = pixivIllustTagPoService.listTagByPid(Collections.singleton(pid));
         if (illustTagNames.size() == 0) {
-            throw new BusinessException(4000, "没有Tag数据，请先请求详情");
+            throw new BusinessException(4000, "没有Tag数据，请先请求详情 pid = " + pid);
         }
         final HashSet<PixivTagPo> pixivTagPos = pixivTagPoService.listSimplified(illustTagNames);
         final List<String> tags = new TagAnalysisResult(pixivTagPos).getAll();
