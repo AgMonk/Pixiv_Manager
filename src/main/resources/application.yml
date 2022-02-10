@@ -41,8 +41,9 @@ spring:
       min-idle: 2
       max-active: 20
       max-wait: 60000
-      time-between-eviction-runs-millis: 1800000
-      min-evictable-idle-time-millis: 1800000
+      time-between-eviction-runs-millis: 6000
+      min-evictable-idle-time-millis: 60000
+      max-evictable-idle-time-millis: 500000
       validation-query: SELECT 1 FROM DUAL
       test-while-idle: true
       test-on-borrow: false
@@ -51,6 +52,7 @@ spring:
       max-pool-prepared-statement-per-connection-size: 20
       filters: stat,wall,slf4j
       connect-properties: druid.stat.mergeSql\=true;druid.stat.slowSqlMillis\=5000
+      keep-alive: true
   web:
     resources:
       cache:
@@ -72,4 +74,4 @@ mybatis:
   mapper-locations: classpath:mapper/*.xml
 
 knife4j:
-  enable: true
+  enable: tru

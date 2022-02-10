@@ -7,6 +7,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
+import javax.annotation.PostConstruct;
+
 /**
  * @author bx002
  */
@@ -23,5 +25,10 @@ public class MybatisPlusConfig {
 
         interceptor.addInnerInterceptor(new PaginationInnerInterceptor());
         return interceptor;
+    }
+
+    @PostConstruct
+    public void setProperties() {
+        System.setProperty("druid.mysql.usePingMethod", "false");
     }
 }
