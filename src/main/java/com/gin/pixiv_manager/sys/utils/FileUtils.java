@@ -181,6 +181,6 @@ public class FileUtils {
     }
 
     public static void main(String[] args) throws IOException {
-        groupFiles("H:\\illust\\pixiv\\旧数据", 300, "zip", "gif", "png", "jpg");
+        groupFiles("H:\\illust\\pixiv\\旧数据\\新建文件夹\\2022-01-24_re", 300, "zip", "gif", "png", "jpg");
     }
 }

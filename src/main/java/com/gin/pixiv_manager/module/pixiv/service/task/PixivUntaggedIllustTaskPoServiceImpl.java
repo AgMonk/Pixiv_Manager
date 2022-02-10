@@ -148,12 +148,16 @@ public class PixivUntaggedIllustTaskPoServiceImpl extends ServiceImpl<PixivUntag
                     if (message.startsWith("没有Tag数据，请先请求详情")) {
                         log.warn("重新添加详情任务 pid = {}", pid);
                         saveOrUpdate(new PixivUntaggedIllustTaskPo(pid));
+                    } else {
+                        e.printStackTrace();
                     }
                 } catch (InterruptedException | TimeoutException e) {
                     future.cancel(true);
                     activeTasks.remove(pid);
+                    e.printStackTrace();
                 } catch (ExecutionException e) {
                     future.cancel(true);
+                    e.printStackTrace();
                     if (e.getMessage().contains(MESSAGE_DELETED)) {
                         log.warn(e.getMessage());
                         removeById(pid);
