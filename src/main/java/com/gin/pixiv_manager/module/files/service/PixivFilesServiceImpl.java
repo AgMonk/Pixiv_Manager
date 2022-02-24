@@ -10,6 +10,7 @@ import com.gin.pixiv_manager.module.pixiv.service.PixivIllustTagPoService;
 import com.gin.pixiv_manager.sys.config.TaskExecutePool;
 import com.gin.pixiv_manager.sys.utils.FileUtils;
 import com.gin.pixiv_manager.sys.utils.ImageUtils;
+import com.gin.pixiv_manager.sys.utils.StringUtils;
 import com.gin.pixiv_manager.sys.utils.TimeUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,6 +30,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 import static com.gin.pixiv_manager.module.pixiv.entity.PixivIllustPo.ILLUST_TYPE_GIF;
+import static com.gin.pixiv_manager.sys.utils.FileUtils.*;
 
 /**
  * @author bx002
@@ -69,7 +71,7 @@ public class PixivFilesServiceImpl implements PixivFilesService {
                 , getPixivConfig().getRootPath()
                 , getPixivConfig().getReEntryDir()
         );
-        final List<File> fileList = FileUtils.listAllFiles(reEntryPath);
+        final List<File> fileList = listAllFiles(reEntryPath);
         final Map<Long, List<File>> fileMap = PixivIllustPo.groupFileByPid(fileList);
         final List<Long> pidList = fileMap.keySet().stream().limit(3).collect(Collectors.toList());
         fileExecutor.execute(() ->
@@ -101,7 +103,7 @@ public class PixivFilesServiceImpl implements PixivFilesService {
                             File dest = new File(downloadPath + PixivIllustPo.parseOriginalName(file.getName()));
                             while (dest.exists()) {
                                 if (file.length() == dest.length()) {
-                                    FileUtils.deleteFile(file);
+                                    deleteFile(file);
                                     return;
                                 }
                                 final String path = dest.getPath();
@@ -112,7 +114,7 @@ public class PixivFilesServiceImpl implements PixivFilesService {
                                 dest = new File(newPath);
                             }
                             try {
-                                FileUtils.move(file, dest);
+                                move(file, dest);
                             } catch (IOException e) {
                                 e.printStackTrace();
                             }
@@ -139,7 +141,7 @@ public class PixivFilesServiceImpl implements PixivFilesService {
         /*todo 尝试从旧数据中查询*/
 
         try {
-            FileUtils.move(files, getDeletedDir());
+            move(files, getDeletedDir());
         } catch (IOException ex) {
             String m = "指定文件已存在：";
             final String message = ex.getMessage();
@@ -157,7 +159,7 @@ public class PixivFilesServiceImpl implements PixivFilesService {
 
                 //noinspection ResultOfMethodCallIgnored
                 try {
-                    FileUtils.move(f1, f2);
+                    move(f1, f2);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -221,23 +223,27 @@ public class PixivFilesServiceImpl implements PixivFilesService {
             final TagAnalysisResult result = pixivIllustTagPoService.getTagAnalysisResultByPid(pid);
             final List<String> ip = result.getSortedIp();
             final List<String> skin = result.getSortedSkin();
+            final List<String> sortedChar = result.getSortedChar();
+            if (StringUtils.isEmpty(sortedChar)) {
+                return;
+            }
             final String datetime = TimeUtils.DATE_TIME_FORMATTER.format(ZonedDateTime.now());
             List<String> pathList = new ArrayList<>();
             pathList.add(getRootPath());
             pathList.add(getPixivConfig().getRootPath());
             pathList.add(getPixivConfig().getTaggedDir());
 //            时间区分
-            pathList.add(datetime.substring(0, datetime.length() - 3));
-            pathList.add(String.join(",", ip));
-            pathList.add(String.join(",", result.getSortedChar()));
+            pathList.add(deleteIllegalChar(datetime.substring(0, datetime.length() - 3)));
+            pathList.add(deleteIllegalChar(String.join(",", ip)));
+            pathList.add(String.join(",", sortedChar));
             if (skin.size() > 0) {
                 pathList.add(String.join(",", skin));
             }
-            String destDirPath = "/" + String.join("/", pathList);
+            String destDirPath = "/" + String.join("/", pathList) + "/";
 
             files.forEach(file -> {
                 try {
-                    FileUtils.move(file, new File(destDirPath + FileUtils.deleteIllegalChar(file.getName())));
+                    move(file, new File(destDirPath + deleteIllegalChar(file.getName())));
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -268,7 +274,7 @@ public class PixivFilesServiceImpl implements PixivFilesService {
                 , getPixivConfig().getUntaggedDir()
                 , dirName
         );
-        final List<File> files = FileUtils.listAllFiles(dirPath);
+        final List<File> files = listAllFiles(dirPath);
         return PixivIllustPo.groupFileByPid(files).keySet();
 
     }
