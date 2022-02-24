@@ -99,6 +99,8 @@ public class PixivTagPoController {
         /*todo 暂时屏蔽收藏数tag */
         qw.and(q -> q.isNull("type").or().ne("type", TYPE_BMK_COUNT));
 
+//        /*todo 优先查找人物+作品tag*/
+//        qw.and(q->q.like("tag","(").or().like("original_translation","("));
 
         Page<PixivTagPo> page = service.page(new Page<>(params.getPage(), params.getSize()), qw);
 //      后续处理
