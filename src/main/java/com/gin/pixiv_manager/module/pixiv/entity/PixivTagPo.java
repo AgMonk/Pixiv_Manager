@@ -32,6 +32,7 @@ public class PixivTagPo implements Serializable {
     public static final String TYPE_IP = "作品";
     public static final String TYPE_BMK_COUNT = "收藏数";
     public static final String TYPE_SKIN = "皮肤";
+    public static final String TYPE_SERIES = "系列";
     public static final String USELESS_PREFIX = "#";
 
 

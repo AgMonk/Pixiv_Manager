@@ -5,6 +5,7 @@ import com.gin.pixiv_manager.module.pixiv.bo.TagAnalysisResult;
 import com.gin.pixiv_manager.module.pixiv.dao.PixivIllustTagPoDao;
 import com.gin.pixiv_manager.module.pixiv.entity.PixivIllustTagPo;
 import com.gin.pixiv_manager.module.pixiv.entity.PixivTagPo;
+import com.gin.pixiv_manager.sys.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -29,10 +30,10 @@ public class PixivIllustTagPoServiceImpl extends ServiceImpl<PixivIllustTagPoDao
 
 
     @Override
-    public TagAnalysisResult getTagAnalysisResultByPid(long pid) {
+    public TagAnalysisResult getTagAnalysisResultByPid(long pid) throws BusinessException {
         final List<String> tagList = listTagByPid(Collections.singleton(pid));
         if (tagList.size() == 0) {
-            return null;
+            throw new BusinessException(4000, "没有查询到标签数据 pid = " + pid);
         }
         final HashSet<PixivTagPo> tags = pixivTagPoService.listSimplified(tagList);
         final TagAnalysisResult result = new TagAnalysisResult(tags);

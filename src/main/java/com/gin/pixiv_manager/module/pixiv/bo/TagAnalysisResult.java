@@ -22,6 +22,7 @@ public class TagAnalysisResult implements Serializable {
     HashSet<String> skin = new HashSet<>();
     HashSet<String> character = new HashSet<>();
     HashSet<String> other = new HashSet<>();
+    String series;
 
     public TagAnalysisResult(Collection<PixivTagPo> tags) {
         tags.forEach(tag -> {
@@ -36,6 +37,9 @@ public class TagAnalysisResult implements Serializable {
             }
             //noinspection EnhancedSwitchMigration
             switch (type) {
+                case PixivTagPo.TYPE_SERIES:
+                    this.series = finalTranslation;
+                    break;
                 case PixivTagPo.TYPE_CHARACTER:
                     character.add(finalTranslation);
                     break;

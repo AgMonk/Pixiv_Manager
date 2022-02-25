@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.gin.pixiv_manager.module.pixiv.bo.TagAnalysisResult;
 import com.gin.pixiv_manager.module.pixiv.entity.PixivIllustTagPo;
+import com.gin.pixiv_manager.sys.exception.BusinessException;
 import com.gin.pixiv_manager.sys.utils.StringUtils;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -66,7 +67,7 @@ public interface PixivIllustTagPoService extends IService<PixivIllustTagPo> {
      * @param pid pid
      * @return 标签分析结果
      */
-    TagAnalysisResult getTagAnalysisResultByPid(long pid);
+    TagAnalysisResult getTagAnalysisResultByPid(long pid) throws BusinessException;
 
     /**
      * 统计tag的使用次数

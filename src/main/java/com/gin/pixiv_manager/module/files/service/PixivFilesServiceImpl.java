@@ -8,6 +8,7 @@ import com.gin.pixiv_manager.module.pixiv.entity.PixivIllustPo;
 import com.gin.pixiv_manager.module.pixiv.service.PixivIllustPoService;
 import com.gin.pixiv_manager.module.pixiv.service.PixivIllustTagPoService;
 import com.gin.pixiv_manager.sys.config.TaskExecutePool;
+import com.gin.pixiv_manager.sys.exception.BusinessException;
 import com.gin.pixiv_manager.sys.utils.FileUtils;
 import com.gin.pixiv_manager.sys.utils.ImageUtils;
 import com.gin.pixiv_manager.sys.utils.StringUtils;
@@ -220,20 +221,39 @@ public class PixivFilesServiceImpl implements PixivFilesService {
             return;
         }
         filesMap.forEach((pid, files) -> {
-            final TagAnalysisResult result = pixivIllustTagPoService.getTagAnalysisResultByPid(pid);
+            final TagAnalysisResult result;
+            try {
+                result = pixivIllustTagPoService.getTagAnalysisResultByPid(pid);
+            } catch (BusinessException e) {
+                if (e.getMessage().startsWith("没有查询到标签数据")) {
+                    illustPoService.removeById(pid);
+                    String reEntryPath = String.format("/%s/%s"
+                            , getPixivConfig().getRootPath()
+                            , getPixivConfig().getReEntryDir()
+                    );
+                    try {
+                        move(files, reEntryPath);
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
+                }
+                return;
+            }
             final List<String> ip = result.getSortedIp();
             final List<String> skin = result.getSortedSkin();
             final List<String> sortedChar = result.getSortedChar();
-            if (StringUtils.isEmpty(sortedChar)) {
-                return;
-            }
-            final String datetime = TimeUtils.DATE_TIME_FORMATTER.format(ZonedDateTime.now());
+            final String series = result.getSeries();
+            final String datetime = TimeUtils.DATE_FORMATTER.format(ZonedDateTime.now());
             List<String> pathList = new ArrayList<>();
             pathList.add(getRootPath());
             pathList.add(getPixivConfig().getRootPath());
             pathList.add(getPixivConfig().getTaggedDir());
 //            时间区分
-            pathList.add(deleteIllegalChar(datetime.substring(0, datetime.length() - 3)));
+            pathList.add(datetime);
+            if (!StringUtils.isEmpty(series)) {
+                pathList.add(series);
+            }
+//            pathList.add(deleteIllegalChar(datetime.substring(0, datetime.length() - 3)));
             pathList.add(deleteIllegalChar(String.join(",", ip)));
             pathList.add(String.join(",", sortedChar));
             if (skin.size() > 0) {
@@ -242,10 +262,24 @@ public class PixivFilesServiceImpl implements PixivFilesService {
             String destDirPath = "/" + String.join("/", pathList) + "/";
 
             files.forEach(file -> {
+                final File dest = new File(destDirPath + deleteIllegalChar(file.getName()));
                 try {
-                    move(file, new File(destDirPath + deleteIllegalChar(file.getName())));
+                    move(file, dest);
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    if (e.getMessage().startsWith("指定文件已存在")) {
+                        final long srcLength = file.length();
+                        final long destLength = dest.length();
+                        final double p = 1.0 * Math.min(srcLength, destLength) / Math.max(srcLength, destLength);
+                        if (p > 0.9) {
+                            log.info("指定文件已存在 且大小相同 删除文件 {}", file);
+                            file.delete();
+                        } else {
+                            log.info("指定文件已存在 {} {} -> {} {} ({})", file, dest, srcLength, destLength, p);
+
+                        }
+                    } else {
+                        e.printStackTrace();
+                    }
                 }
             });
 
