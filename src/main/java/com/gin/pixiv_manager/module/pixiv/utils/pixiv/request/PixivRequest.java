@@ -15,6 +15,7 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 
@@ -35,7 +36,7 @@ public class PixivRequest {
     public static <T> T get(String url, HashMap<String, Object> params, String cookie, Class<T> clazz) throws IOException {
         String requestUrl = url;
         long start = System.currentTimeMillis();
-        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+        try (CloseableHttpClient httpClient = HttpClientBuilder.create().build()) {
             if (params != null && params.size() > 0) {
                 final String param = params.keySet().stream()
                         .map(i -> i + "=" + URLEncoder.encode(String.valueOf(params.get(i)), StandardCharsets.UTF_8))
